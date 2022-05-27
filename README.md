@@ -13,11 +13,18 @@ Author is Igor Okladnikov.
 - [ ] Specify directory to keep manage files via CLI arguments
 - [ ] Cover functionality using `pytest`
 - [ ] Deploy via Docker image (for those who is familiar with Docker)
+- [ ] Use `logging` module for logging
 
 ## File Service
 
 - [ ] Avoid usage of dangerous values like `../../../etc/passwd`
 - [ ] Support binary file content as well
+
+## Configuration
+
+- [ ] Read settings from CLI arguments
+- [ ] Read settings from env vars
+- [ ] Read settings from config file
 
 ## Web Service
 
