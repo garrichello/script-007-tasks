@@ -1,3 +1,20 @@
+"""Files and directories manipulations.
+
+Imports:
+    glob
+    os
+
+Provides functions:
+    change_dir()
+    get_files()
+    get_file_data()
+    create_file()
+    delete_file()
+"""
+from datetime import datetime
+import glob
+import os
+
 
 def change_dir(path: str, autocreate: bool = True) -> None:
     """Change current directory of app.
@@ -11,7 +28,27 @@ def change_dir(path: str, autocreate: bool = True) -> None:
         ValueError: if path is invalid.
     """
 
-    pass
+    try:
+        os.makedirs(path, exist_ok=autocreate)
+    except (OSError, FileNotFoundError):
+        raise ValueError
+
+    os.chdir(path)
+
+
+def get_file_metadata(filename: str):
+    """Get file metadata.
+
+    Args:
+        filename (str): file name
+    """
+    file_meta = dict(
+        name=filename,
+        create_date=datetime.fromtimestamp(os.path.getctime(filename)),
+        edit_date=datetime.fromtimestamp(os.path.getmtime(filename)),
+        size=os.path.getsize(filename),
+    )
+    return file_meta
 
 
 def get_files() -> list:
@@ -25,7 +62,12 @@ def get_files() -> list:
         - size (int): size of file in bytes.
     """
 
-    pass
+    result = list()
+    cur_dir = os.path.join(os.getcwd(), "*")
+    for file_name in glob.glob(cur_dir):
+        file_meta = get_file_metadata(file_name)
+        result.append(file_meta)
+    return result
 
 
 def get_file_data(filename: str) -> dict:
@@ -47,10 +89,12 @@ def get_file_data(filename: str) -> dict:
         ValueError: if filename is invalid.
     """
 
-    pass
+    result = dict()
+
+    return result
 
 
-def create_file(filename: str, content: str = None) -> dict:
+def create_file(filename: str, content: str = "") -> dict:
     """Create a new file.
 
     Args:
@@ -68,7 +112,9 @@ def create_file(filename: str, content: str = None) -> dict:
         ValueError: if filename is invalid.
     """
 
-    pass
+    result = dict()
+
+    return result
 
 
 def delete_file(filename: str) -> None:
