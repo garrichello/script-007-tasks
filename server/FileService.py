@@ -19,6 +19,7 @@ import os
 # Windows-specific error code indicating an invalid pathname.
 ERROR_INVALID_NAME = 123
 
+
 def is_pathname_valid(pathname: str) -> bool:
     """
     Check if pathname is valid.
@@ -37,7 +38,7 @@ def is_pathname_valid(pathname: str) -> bool:
         if not isinstance(pathname, str) or not pathname:
             return False
 
-        # Strip this pathname's Windows-specific drive specifier (e.g., `C:\`) if any. 
+        # Strip this pathname's Windows-specific drive specifier (e.g., `C:\`) if any.
         _, pathname = os.path.splitdrive(pathname)
 
         # Directory guaranteed to exist.
@@ -67,7 +68,7 @@ def is_pathname_valid(pathname: str) -> bool:
             #   * Under most POSIX-compatible OSes, "ENAMETOOLONG".
             #   * Under some edge-case OSes (e.g., SunOS, *BSD), "ERANGE".
             except OSError as exc:
-                if hasattr(exc, 'winerror'):
+                if hasattr(exc, "winerror"):
                     if exc.winerror == ERROR_INVALID_NAME:
                         return False
                 elif exc.errno in {errno.ENAMETOOLONG, errno.ERANGE}:
@@ -96,10 +97,11 @@ def change_dir(path: str, autocreate: bool = True) -> None:
         ValueError: if path is invalid.
     """
 
-    if not is_pathname_valid(path):
-        raise ValueError
+    if not is_pathname_valid(path) or ".." in path or not path.strip():
+        raise ValueError(f"Bad path: {path}")
     if not os.path.exists(path) and not autocreate:
-        raise RuntimeError
+        raise RuntimeError(f"Path does not exist: {path}")
+
     os.makedirs(path, exist_ok=autocreate)
     os.chdir(path)
 
@@ -132,8 +134,8 @@ def get_files() -> list:
 
     result = list()
     cur_dir = os.path.join(os.getcwd(), "*")
-    for file_name in glob.glob(cur_dir):
-        file_meta = get_file_metadata(file_name)
+    for filename in glob.glob(cur_dir):
+        file_meta = get_file_metadata(filename)
         result.append(file_meta)
     return result
 
@@ -157,7 +159,17 @@ def get_file_data(filename: str) -> dict:
         ValueError: if filename is invalid.
     """
 
+    if not is_pathname_valid(filename) or ".." in filename or not filename.strip():
+        raise ValueError(f"Bad filename: {filename}")
+    if not os.path.exists(filename):
+        raise RuntimeError(f"File does not exist: {filename}")
+
     result = dict()
+
+    result = get_file_metadata(filename)
+    with open(filename, "r") as f:
+        content = f.read()
+    result["content"] = content
 
     return result
 
