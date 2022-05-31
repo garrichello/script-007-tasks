@@ -1,6 +1,7 @@
 """Common fixtures for FileService functions testing
 
 Imports:
+    copy
     datetime
     os
     pytest
