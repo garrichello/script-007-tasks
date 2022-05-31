@@ -31,5 +31,4 @@ class TestCreateFile:
         """Test if get_files returns a list with metadata of a file."""
         target_filename = os.path.join(tmp_path, sample_binary_data_1["name"])
         file_full_info = create_file(target_filename, sample_binary_data_1["data"])
-        print(file_full_info)
         assert file_full_info == new_binary_file_info
