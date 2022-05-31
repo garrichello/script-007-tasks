@@ -7,6 +7,7 @@ Imports:
 """
 
 import os
+import uuid
 
 import pytest
 
@@ -26,12 +27,12 @@ class TestDeleteFile:
         with pytest.raises(RuntimeError):
             _ = delete_file("non_existing_file")
 
-    def test_delete_file(self, new_file_info, tmp_path):
+    def test_delete_file(self, tmp_path):
         """Test if get_files returns a list with metadata of a file."""
-        target_filename = os.path.join(tmp_path, "delete_me")
+        target_filename = os.path.join(tmp_path, str(uuid.uuid4()))
 
-        with open(target_filename, "w") as f:
-            f.write("delete me!")
+        with open(target_filename, "wb") as f:
+            f.write(b"")
 
         delete_file(target_filename)
         assert not os.path.exists(target_filename)

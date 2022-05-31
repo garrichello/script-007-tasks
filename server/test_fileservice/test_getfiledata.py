@@ -26,8 +26,8 @@ class TestGetFileData:
         with pytest.raises(RuntimeError):
             _ = get_file_data("non_existing_file")
 
-    def test_get_one_file_meta(self, sample_file_full_info, tmp_path, sample_data_1):
+    def test_get_one_file_meta(self, sample_binary_file_full_info, tmp_path, sample_binary_data_1):
         """Test if get_files returns a list with metadata of a file."""
-        target_filename = os.path.join(tmp_path, sample_data_1["name"])
+        target_filename = os.path.join(tmp_path, sample_binary_data_1["name"])
         file_full_info = get_file_data(target_filename)
-        assert file_full_info == sample_file_full_info
+        assert file_full_info == sample_binary_file_full_info
