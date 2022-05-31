@@ -29,8 +29,5 @@ class TestGetFiles:
 
         # Since the order of info dicts in the list is unknown, check their presence in the loop.
         for file_meta in two_sample_files_meta:
-            if file_meta in two_files_meta:
-                file_meta_is_present.append(True)
-            else:
-                file_meta_is_present.append(False)
+            file_meta_is_present.append(file_meta in two_files_meta)
         assert all(file_meta_is_present)
