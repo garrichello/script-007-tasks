@@ -27,6 +27,12 @@ def sample_data_2():
     return [dict(name="letters.txt", data="abcdefghijklmnopqrstuvwxyz"), dict(name="digits.txt", data="1234567890")]
 
 
+@pytest.fixture(params=["", "*bad*file*name*", os.path.join("..", "file")])
+def bad_file_name(request):
+    """Return a bad name of a file."""
+    return request.param
+
+
 def get_file_info(file_name: str):
     return dict(
         name=file_name,
@@ -78,4 +84,17 @@ def sample_file_full_info(tmp_path, sample_file_meta, sample_data_1):
     # Return full info and contents of a file.
     result = copy.copy(sample_file_meta[0])
     result["content"] = sample_data_1["data"]
+    return result
+
+
+@pytest.fixture
+def new_file_info(tmp_path, sample_file_meta, sample_data_1):
+    """Full info of a file."""
+
+    os.chdir(str(tmp_path))
+
+    # Return full info and contents of a file.
+    result = copy.copy(sample_file_meta[0])
+    result["content"] = sample_data_1["data"]
+    del result["edit_date"]
     return result
