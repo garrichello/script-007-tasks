@@ -9,6 +9,7 @@ import argparse
 
 from server import FileService
 
+
 #!/usr/bin/env python3
 def main(args: argparse.Namespace):
     """Main function."""
