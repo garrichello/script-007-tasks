@@ -24,7 +24,16 @@ def sample_data_1():
 def sample_data_2():
     """Sample data for another file."""
 
-    return dict(name="digits.txt", data="1234567890")
+    return [dict(name="letters.txt", data="abcdefghijklmnopqrstuvwxyz"), dict(name="digits.txt", data="1234567890")]
+
+
+def get_file_info(file_name: str):
+    return dict(
+        name=file_name,
+        create_date=datetime.fromtimestamp(os.path.getctime(file_name)),
+        edit_date=datetime.fromtimestamp(os.path.getmtime(file_name)),
+        size=os.path.getsize(file_name),
+    )
 
 
 @pytest.fixture
@@ -39,46 +48,25 @@ def sample_file_meta(tmp_path, sample_data_1):
         file.write(sample_data_1["data"])
 
     # Return the info dict in a list.
-    return [
-        dict(
-            name=test_file_name,
-            create_date=datetime.fromtimestamp(os.path.getctime(test_file_name)),
-            edit_date=datetime.fromtimestamp(os.path.getmtime(test_file_name)),
-            size=os.path.getsize(test_file_name),
-        )
-    ]
+    return [get_file_info(test_file_name)]
 
 
 @pytest.fixture
-def two_sample_files_meta(tmp_path, sample_data_1, sample_data_2):
+def two_sample_files_meta(tmp_path, sample_data_2):
     """Metadata for two files."""
-    
+
     os.chdir(str(tmp_path))
+    result = []
 
-    # Create the first file and get its info.
-    test_file_name = os.path.join(tmp_path, sample_data_1["name"])
-    with open(test_file_name, "w") as file:
-        file.write(sample_data_1["data"])
-    file1_meta = dict(
-        name=test_file_name,
-        create_date=datetime.fromtimestamp(os.path.getctime(test_file_name)),
-        edit_date=datetime.fromtimestamp(os.path.getmtime(test_file_name)),
-        size=os.path.getsize(test_file_name),
-    )
-
-    # Create the second file and get its info.
-    test_file_name = os.path.join(tmp_path, sample_data_2["name"])
-    with open(test_file_name, "w") as file:
-        file.write(sample_data_2["data"])
-    file2_meta = dict(
-        name=test_file_name,
-        create_date=datetime.fromtimestamp(os.path.getctime(test_file_name)),
-        edit_date=datetime.fromtimestamp(os.path.getmtime(test_file_name)),
-        size=os.path.getsize(test_file_name),
-    )
+    for sample_data in sample_data_2:
+        test_file_name = os.path.join(tmp_path, sample_data["name"])
+        with open(test_file_name, "w") as file:
+            file.write(sample_data["data"])
+        file_meta = get_file_info(test_file_name)
+        result.append(file_meta)
 
     # Return a list of both info dicts.
-    return [file1_meta, file2_meta]
+    return result
 
 
 @pytest.fixture
@@ -90,4 +78,4 @@ def sample_file_full_info(tmp_path, sample_file_meta, sample_data_1):
     # Return full info and contents of a file.
     result = copy.copy(sample_file_meta[0])
     result["content"] = sample_data_1["data"]
-    return [result]
+    return result
