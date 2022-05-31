@@ -4,7 +4,7 @@ Imports:
     server.FileService.get_files()
 """
 
-from server.FileService import get_files
+from ..FileService import get_files
 
 
 class TestGetFiles:

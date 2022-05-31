@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from server.FileService import get_file_data
+from ..FileService import get_file_data
 
 
 class TestGetFileData:

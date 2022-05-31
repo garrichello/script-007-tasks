@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from server.FileService import change_dir
+from ..FileService import change_dir
 
 
 class TestChangeDir:

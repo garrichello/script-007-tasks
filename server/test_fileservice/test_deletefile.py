@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from server.FileService import delete_file
+from ..FileService import delete_file
 
 
 class TestDeleteFile:
