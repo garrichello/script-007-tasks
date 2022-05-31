@@ -14,11 +14,6 @@ from server.FileService import get_file_data
 class TestGetFileData:
     """Test get_file_data function."""
 
-    @pytest.fixture(params=["", "*bad*file*name*", os.path.join("..", "file")])
-    def bad_file_name(self, request):
-        """Return a bad name of a file."""
-        return request.param
-
     def test_bad_file_name(self, bad_file_name):
         """Test bad name raises ValueError"""
         with pytest.raises(ValueError):
