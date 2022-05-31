@@ -215,4 +215,9 @@ def delete_file(filename: str) -> None:
         ValueError: if filename is invalid.
     """
 
-    pass
+    if not is_pathname_valid(filename):
+        raise ValueError(f"Bad filename: {filename}")
+    if not os.path.exists(filename):
+        raise RuntimeError(f"File does not exist: {filename}")
+
+    os.remove(filename)
