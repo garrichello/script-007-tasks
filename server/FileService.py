@@ -32,10 +32,9 @@ def is_pathname_valid(pathname: str) -> bool:
     And slightly modified.
     """
 
-    # If this pathname is either not a string or is but is empty, this pathname
-    # is invalid.
+    # If this pathname is either not a string or is but is empty, this pathname is invalid.
     try:
-        if not isinstance(pathname, str) or not pathname:
+        if not isinstance(pathname, str) or ".." in pathname or not pathname.strip():
             return False
 
         # Strip this pathname's Windows-specific drive specifier (e.g., `C:\`) if any.
@@ -85,27 +84,6 @@ def is_pathname_valid(pathname: str) -> bool:
     # (e.g., a bug). Permit this exception to unwind the call stack.
 
 
-def change_dir(path: str, autocreate: bool = True) -> None:
-    """Change current directory of app.
-
-    Args:
-        path (str): Path to working directory with files.
-        autocreate (bool): Create folder if it doesn't exist.
-
-    Raises:
-        RuntimeError: if directory does not exist and autocreate is False.
-        ValueError: if path is invalid.
-    """
-
-    if not is_pathname_valid(path) or ".." in path or not path.strip():
-        raise ValueError(f"Bad path: {path}")
-    if not os.path.exists(path) and not autocreate:
-        raise RuntimeError(f"Path does not exist: {path}")
-
-    os.makedirs(path, exist_ok=autocreate)
-    os.chdir(path)
-
-
 def get_file_metadata(filename: str):
     """Get file metadata.
 
@@ -119,6 +97,27 @@ def get_file_metadata(filename: str):
         size=os.path.getsize(filename),
     )
     return file_meta
+
+
+def change_dir(path: str, autocreate: bool = True) -> None:
+    """Change current directory of app.
+
+    Args:
+        path (str): Path to working directory with files.
+        autocreate (bool): Create folder if it doesn't exist.
+
+    Raises:
+        RuntimeError: if directory does not exist and autocreate is False.
+        ValueError: if path is invalid.
+    """
+
+    if not is_pathname_valid(path):
+        raise ValueError(f"Bad path: {path}")
+    if not os.path.exists(path) and not autocreate:
+        raise RuntimeError(f"Path does not exist: {path}")
+
+    os.makedirs(path, exist_ok=autocreate)
+    os.chdir(path)
 
 
 def get_files() -> list:
@@ -159,7 +158,7 @@ def get_file_data(filename: str) -> dict:
         ValueError: if filename is invalid.
     """
 
-    if not is_pathname_valid(filename) or ".." in filename or not filename.strip():
+    if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
     if not os.path.exists(filename):
         raise RuntimeError(f"File does not exist: {filename}")
@@ -192,9 +191,17 @@ def create_file(filename: str, content: str = "") -> dict:
         ValueError: if filename is invalid.
     """
 
-    result = dict()
+    if not is_pathname_valid(filename):
+        raise ValueError(f"Bad filename: {filename}")
+        
+    with open(filename, "w") as f:
+        f.write(content)
 
-    return result
+    file_meta = get_file_metadata(filename)
+    file_meta["content"] = content
+    del file_meta["edit_date"]
+
+    return file_meta
 
 
 def delete_file(filename: str) -> None:
