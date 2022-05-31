@@ -1,7 +1,9 @@
 """Files and directories manipulations.
 
 Imports:
+    datetime
     glob
+    errno
     os
 
 Provides functions:
