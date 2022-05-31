@@ -13,8 +13,6 @@ from server import FileService
 def main(args: argparse.Namespace):
     """Main function."""
 
-    print(f"Задан рабочий каталог: {args.data_directory}")
-
     # Set data directory
     FileService.change_dir(args.data_directory, autocreate=True)
 
