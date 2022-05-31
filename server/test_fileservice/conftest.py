@@ -13,6 +13,9 @@ import os
 
 import pytest
 
+@pytest.fixture(autouse=True)
+def chdir_to_tmp_path(tmp_path):
+    os.chdir(str(tmp_path))
 
 @pytest.fixture
 def sample_data_1():
@@ -54,8 +57,6 @@ def get_file_info(file_name: str):
 def sample_file_meta(tmp_path, sample_data_1):
     """Metadata for a file."""
 
-    os.chdir(str(tmp_path))
-
     # Create a file and get its info.
     test_file_name = os.path.join(tmp_path, sample_data_1["name"])
     with open(test_file_name, "w") as file:
@@ -66,9 +67,7 @@ def sample_file_meta(tmp_path, sample_data_1):
 
 @pytest.fixture
 def sample_binary_file_meta(tmp_path, sample_binary_data_1):
-    """Metadata for a file."""
-
-    os.chdir(str(tmp_path))
+    """Metadata for a binary file."""
 
     # Create a file and get its info.
     test_file_name = os.path.join(tmp_path, sample_binary_data_1["name"])
@@ -83,7 +82,6 @@ def sample_binary_file_meta(tmp_path, sample_binary_data_1):
 def two_sample_files_meta(tmp_path, sample_data_2):
     """Metadata for two files."""
 
-    os.chdir(str(tmp_path))
     result = []
 
     for sample_data in sample_data_2:
@@ -98,36 +96,27 @@ def two_sample_files_meta(tmp_path, sample_data_2):
 
 
 @pytest.fixture
-def sample_file_full_info(tmp_path, sample_file_meta, sample_data_1):
-    """Full info of a file."""
+def sample_file_full_info(sample_file_meta, sample_data_1):
+    """Return full info and contents of a sample file."""
 
-    os.chdir(str(tmp_path))
-
-    # Return full info and contents of a file.
     result = copy.copy(sample_file_meta[0])
     result["content"] = sample_data_1["data"]
     return result
 
 
 @pytest.fixture
-def new_file_info(tmp_path, sample_file_meta, sample_data_1):
-    """Full info of a file."""
+def new_file_info(sample_file_meta, sample_data_1):
+    """Return full info and contents of a new file."""
 
-    os.chdir(str(tmp_path))
-
-    # Return full info and contents of a file.
     result = copy.copy(sample_file_meta[0])
     result["content"] = sample_data_1["data"]
     del result["edit_date"]
     return result
 
 @pytest.fixture
-def new_binary_file_info(tmp_path, sample_binary_file_meta, sample_binary_data_1):
-    """Full info of a file."""
+def new_binary_file_info(sample_binary_file_meta, sample_binary_data_1):
+    """Return full info and contents of a new binary file."""
 
-    os.chdir(str(tmp_path))
-
-    # Return full info and contents of a file.
     result = copy.copy(sample_binary_file_meta[0])
     result["content"] = sample_binary_data_1["data"]  # type: ignore
     del result["edit_date"]
