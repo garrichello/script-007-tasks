@@ -2,7 +2,6 @@
 
 Imports:
     server.FileService.get_files()
-
 """
 
 from server.FileService import get_files
@@ -24,7 +23,7 @@ class TestGetFiles:
 
     def test_get_two_files_meta(self, two_sample_files_meta):
         """Test if get_files returns a list with metadata of two files."""
-        
+
         two_files_meta = get_files()
         file_meta_is_present = list()
 

@@ -1,12 +1,14 @@
 """Tests for server.FileService.get_file_data() function.
 
 Imports:
+    os
+    pytest
     server.FileService.get_file_data()
-
 """
 
-import pytest
 import os
+
+import pytest
 
 from server.FileService import get_file_data
 
@@ -23,7 +25,6 @@ class TestGetFileData:
         """Test file does not exists raises RuntimeError"""
         with pytest.raises(RuntimeError):
             _ = get_file_data("non_existing_file")
-
 
     def test_get_one_file_meta(self, sample_file_full_info, tmp_path, sample_data_1):
         """Test if get_files returns a list with metadata of a file."""

@@ -13,6 +13,7 @@ Provides functions:
     create_file()
     delete_file()
 """
+
 from datetime import datetime
 import errno
 import glob
@@ -195,7 +196,7 @@ def create_file(filename: str, content: str = "") -> dict:
 
     if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
-        
+
     with open(filename, "w") as f:
         f.write(content)
 
