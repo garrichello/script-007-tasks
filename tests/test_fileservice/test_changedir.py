@@ -19,31 +19,32 @@ class TestChangeDir:
         """Return a good name of a directory."""
         return request.param
 
-    @pytest.fixture(params=["///:this_is_a_bad_dir:///", "another*bad*dir"])
+    @pytest.fixture(params=["", "///:*this_is_a_bad_dir*:///", "another*bad*dir"])
     def bad_dir(self, request):
         """Return a bad name of a directory."""
         return request.param
 
     def test_change_to_existing_dir(self, tmp_path):
-        """Test if change_dir can change to an existing directory."""
+        """CWD to an existing directory."""
         target_dir = str(tmp_path)
         change_dir(target_dir)
         assert os.getcwd() == target_dir
 
     def test_change_to_nonexisting_dir_with_autocreate(self, tmp_path, good_dir):
-        """Test if change_dir can autocreate a nonexistent directory and change to it."""
+        """Autocreate a nonexistent directory and CWD to it."""
         target_dir = os.path.join(str(tmp_path), good_dir)
         change_dir(target_dir, autocreate=True)
         assert os.getcwd() == target_dir
 
     @pytest.mark.xfail(raises=RuntimeError)
-    def test_change_to_nonexisting_dir_no_autocreate(self, tmp_path, good_dir):
-        """Test if change_dir fails changing to a nonexistent directory."""
+    def test_change_to_nonexisting_dir_no_autocreate_2(self, tmp_path, good_dir):
+        """Raise RuntimeError if directory does not exist and autocreate is False."""
         target_dir = os.path.join(str(tmp_path), good_dir)
         change_dir(target_dir, autocreate=False)
 
+
     @pytest.mark.xfail(raises=ValueError)
     def test_change_to_invalid_dir(self, tmp_path, bad_dir):
-        """Test if change_dir fails changing to an invalid directory."""
+        """Raise ValueError if path is invalid."""
         target_dir = os.path.join(str(tmp_path), bad_dir)
         change_dir(target_dir, autocreate=True)
