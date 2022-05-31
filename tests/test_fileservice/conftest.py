@@ -28,6 +28,13 @@ def sample_data_2():
     return [dict(name="letters.txt", data="abcdefghijklmnopqrstuvwxyz"), dict(name="digits.txt", data="1234567890")]
 
 
+@pytest.fixture
+def sample_binary_data_1():
+    """Sample binary content for a file."""
+
+    return dict(name="binary.bin", data=b"abcdefghijklmnopqrstuvwxyz")
+
+
 @pytest.fixture(params=["", "*bad*file*name*", os.path.join("..", "file")])
 def bad_file_name(request):
     """Return a bad name of a file."""
@@ -53,6 +60,20 @@ def sample_file_meta(tmp_path, sample_data_1):
     test_file_name = os.path.join(tmp_path, sample_data_1["name"])
     with open(test_file_name, "w") as file:
         file.write(sample_data_1["data"])
+
+    # Return the info dict in a list.
+    return [get_file_info(test_file_name)]
+
+@pytest.fixture
+def sample_binary_file_meta(tmp_path, sample_binary_data_1):
+    """Metadata for a file."""
+
+    os.chdir(str(tmp_path))
+
+    # Create a file and get its info.
+    test_file_name = os.path.join(tmp_path, sample_binary_data_1["name"])
+    with open(test_file_name, "wb") as file:
+        file.write(sample_binary_data_1["data"])
 
     # Return the info dict in a list.
     return [get_file_info(test_file_name)]
@@ -97,5 +118,17 @@ def new_file_info(tmp_path, sample_file_meta, sample_data_1):
     # Return full info and contents of a file.
     result = copy.copy(sample_file_meta[0])
     result["content"] = sample_data_1["data"]
+    del result["edit_date"]
+    return result
+
+@pytest.fixture
+def new_binary_file_info(tmp_path, sample_binary_file_meta, sample_binary_data_1):
+    """Full info of a file."""
+
+    os.chdir(str(tmp_path))
+
+    # Return full info and contents of a file.
+    result = copy.copy(sample_binary_file_meta[0])
+    result["content"] = sample_binary_data_1["data"]  # type: ignore
     del result["edit_date"]
     return result

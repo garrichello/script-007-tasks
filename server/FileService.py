@@ -176,7 +176,7 @@ def get_file_data(filename: str) -> dict:
     return result
 
 
-def create_file(filename: str, content: str = "") -> dict:
+def create_file(filename: str, content: str | bytes) -> dict:
     """Create a new file.
 
     Args:
@@ -197,11 +197,18 @@ def create_file(filename: str, content: str = "") -> dict:
     if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
 
-    with open(filename, "w") as f:
+    if isinstance(content, str):
+        mode = "w"
+    elif isinstance(content, bytes):
+        mode = "wb"
+    else:
+        raise ValueError(f"Bad content type. Only str and bytes allowed.")
+
+    with open(filename, mode) as f:
         f.write(content)
 
     file_meta = get_file_metadata(filename)
-    file_meta["content"] = content
+    file_meta["content"] = content  # type: ignore
     del file_meta["edit_date"]
 
     return file_meta
