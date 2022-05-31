@@ -14,10 +14,10 @@ Provides functions:
     delete_file()
 """
 
-from datetime import datetime
 import errno
 import glob
 import os
+from datetime import datetime
 
 # Windows-specific error code indicating an invalid pathname.
 ERROR_INVALID_NAME = 123
@@ -123,6 +123,22 @@ def change_dir(path: str, autocreate: bool = True) -> None:
     os.chdir(path)
 
 
+def delete_dir(path: str, recursive: bool = True) -> None:
+    """Delete specified directory.
+    If path is a current directory, change current directory to its parent before deletion.
+
+    Args:
+        path (str): Path to a directory to delete.
+        recursive (bool): if True delete all files and child directories recursively before deletion.
+
+    Raises:
+        RuntimeError: if directory does not exist or directory contains files and recursive is False.
+        ValueError: if path is invalid.
+    """
+    
+    pass
+
+
 def get_files() -> list:
     """Get info about all files in working directory.
 
@@ -137,8 +153,9 @@ def get_files() -> list:
     result = list()
     cur_dir = os.path.join(os.getcwd(), "*")
     for filename in glob.glob(cur_dir):
-        file_meta = get_file_metadata(filename)
-        result.append(file_meta)
+        if os.path.isfile(filename):
+            file_meta = get_file_metadata(filename)
+            result.append(file_meta)
     return result
 
 
@@ -169,14 +186,15 @@ def get_file_data(filename: str) -> dict:
     result = dict()
 
     result = get_file_metadata(filename)
-    with open(filename, "r") as f:
+    content = bytes()
+    with open(filename, "rb") as f:
         content = f.read()
-    result["content"] = content
+    result["content"] = content  # type: ignore
 
     return result
 
 
-def create_file(filename: str, content: str | bytes) -> dict:
+def create_file(filename: str, content: bytes) -> dict:
     """Create a new file.
 
     Args:
@@ -197,14 +215,7 @@ def create_file(filename: str, content: str | bytes) -> dict:
     if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
 
-    if isinstance(content, str):
-        mode = "w"
-    elif isinstance(content, bytes):
-        mode = "wb"
-    else:
-        raise ValueError(f"Bad content type. Only str and bytes allowed.")
-
-    with open(filename, mode) as f:
+    with open(filename, "wb") as f:
         f.write(content)
 
     file_meta = get_file_metadata(filename)
