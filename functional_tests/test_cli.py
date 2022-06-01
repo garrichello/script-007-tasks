@@ -10,7 +10,7 @@ import subprocess
 
 DATA_DIR = "data"
 EXECUTION_TIMEOUT = 5
-
+PYTHON_EXE = os.path.join(".venv", "Scripts", "python")
 
 def capture(command):
     proc = subprocess.Popen(
@@ -28,7 +28,7 @@ def capture(command):
 
 def test_main_no_param():
     # Since Alice is an experienced user she immediately runs the main module from CLI.
-    command = [".venv\\Scripts\\python", "main.py"]
+    command = [PYTHON_EXE, "main.py"]
     out, err, exitcode = capture(command)
 
     # Alice notices an error message about some required arguments.
@@ -39,7 +39,7 @@ def test_main_no_param():
 
 def test_main_help_param():
     # To understand what arguments the main module gets, she runs the main module with "-h" argument.
-    command = [".venv\\Scripts\\python", "main.py", "-h"]
+    command = [PYTHON_EXE, "main.py", "-h"]
     out, err, exitcode = capture(command)
 
     # Alice notices an error message about some required arguments.
@@ -53,7 +53,7 @@ def test_main_help_param():
 
 def test_main_datadir_param():
     # So, Alice starts the app with a required argument "-d".
-    command = [".venv\\Scripts\\python", "main.py", "-d", DATA_DIR]
+    command = [PYTHON_EXE, "main.py", "-d", DATA_DIR]
     out, err, exitcode = capture(command)
 
     # And sees that now app starts without errors.
@@ -74,7 +74,7 @@ def test_main_datadiralt_param():
         os.rmdir(DATA_DIR)
 
     # She starts the app again using "--data-directory" to specify the data directory.
-    command = [".venv\\Scripts\\python", "main.py", "--data-directory", "data"]
+    command = [PYTHON_EXE, "main.py", "--data-directory", "data"]
     out, err, exitcode = capture(command)
 
     # Again, Alice sees that the app starts without errors.
