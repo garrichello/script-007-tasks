@@ -1,4 +1,8 @@
 """Functional tests for CLI
+
+Imports:
+    os
+    subprocess
 """
 
 import os
@@ -6,6 +10,7 @@ import subprocess
 
 DATA_DIR = "data"
 EXECUTION_TIMEOUT = 5
+
 
 def capture(command):
     proc = subprocess.Popen(
@@ -67,6 +72,7 @@ def test_main_datadiralt_param():
     # Firstly, Alice removes freshly created data directory to check if it will be created again.
     if os.path.exists(DATA_DIR):
         os.rmdir(DATA_DIR)
+
     # She starts the app again using "--data-directory" to specify the data directory.
     command = [".venv\\Scripts\\python", "main.py", "--data-directory", "data"]
     out, err, exitcode = capture(command)
