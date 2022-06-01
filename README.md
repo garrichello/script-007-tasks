@@ -22,7 +22,7 @@ Author is Igor Okladnikov.
 
 ## Configuration
 
-- [ ] Read settings from CLI arguments
+- [x] Read settings from CLI arguments
 - [ ] Read settings from env vars
 - [ ] Read settings from config file
 
