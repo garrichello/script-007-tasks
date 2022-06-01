@@ -1,5 +1,5 @@
 
-# PROJECT_NAME MyProject
+# Cool Web Server
 
 Author is Igor Okladnikov.
 
