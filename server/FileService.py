@@ -119,7 +119,10 @@ def change_dir(path: str, autocreate: bool = True) -> None:
     if not os.path.exists(path) and not autocreate:
         raise RuntimeError(f"Path does not exist: {path}")
 
-    os.makedirs(path, exist_ok=autocreate)
+    try:
+        os.makedirs(path, exist_ok=autocreate)
+    except NotADirectoryError:
+        raise ValueError(f"Bad path: {path}")
     os.chdir(path)
 
 
