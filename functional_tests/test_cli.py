@@ -6,11 +6,20 @@ Imports:
 """
 
 import os
+import platform
 import subprocess
 
 DATA_DIR = "data"
 EXECUTION_TIMEOUT = 5
-PYTHON_EXE = os.path.join(".venv", "Scripts", "python")
+OS_NAME = platform.system()
+
+if OS_NAME == "Windows":
+    PYTHON_EXE = os.path.join(".venv", "Scripts", "python")
+elif OS_NAME == "Linux":
+    PYTHON_EXE = os.path.join(".venv", "bin", "python")
+else:
+    raise NotImplementedError
+
 
 def capture(command):
     proc = subprocess.Popen(
