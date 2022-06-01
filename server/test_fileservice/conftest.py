@@ -10,6 +10,7 @@ Imports:
 
 import copy
 import os
+import platform
 import random
 import time
 import uuid
@@ -19,6 +20,10 @@ import pytest
 
 MIN_TEST_FILE_LEN = 16
 MAX_TEST_FILE_LEN = 1024
+
+@pytest.fixture
+def os_system():
+    return platform.system()
 
 @pytest.fixture(autouse=True)
 def chdir_to_tmp_path(tmp_path):
@@ -49,14 +54,20 @@ def sample_binary_data_2(test_file_len):
 
 
 @pytest.fixture(params=["", "*bad*file*name*", os.path.join("..", "file")])
-def bad_file_name(request):
+def bad_file_name_win(request):
+    """Return a bad name of a file."""
+    return request.param
+
+
+@pytest.fixture(params=["\0", "a"*300])
+def bad_file_name_lnx(request):
     """Return a bad name of a file."""
     return request.param
 
 
 def set_file_info(filename: str, filesize: int) -> dict:
     """Set modification time of a file to a random value. Returns file information.
-    
+
     Args:
         filename (str): Filename
         filesize (int): File size (in bytes)
@@ -75,7 +86,7 @@ def set_file_info(filename: str, filesize: int) -> dict:
         name=filename,
         create_date=datetime.fromtimestamp(os.path.getctime(filename)),
         edit_date=datetime.fromtimestamp(m_time),
-        size=filesize
+        size=filesize,
     )
     return info
 
