@@ -17,10 +17,16 @@ from ..FileService import delete_file
 class TestDeleteFile:
     """Test delete_file function."""
 
-    def test_bad_file_name(self, bad_file_name):
+    def test_bad_file_name(self, os_system, bad_file_name_win, bad_file_name_lnx):
         """Bad file name raises ValueError"""
         with pytest.raises(ValueError):
-            delete_file(bad_file_name)
+            if os_system == "Windows":
+                _ = delete_file(bad_file_name_win)
+            elif os_system == "Linux":
+                _ = delete_file(bad_file_name_lnx)
+            else:
+                raise NotImplementedError
+
 
     def test_file_not_exists(self):
         """Test file does not exists raises RuntimeError"""
