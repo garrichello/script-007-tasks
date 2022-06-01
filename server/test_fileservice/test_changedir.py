@@ -21,7 +21,7 @@ class TestChangeDir:
         """Return a good name of a directory."""
         return request.param
 
-    @pytest.fixture(params=["///:*this_is_a_bad_dir*:///", "another*bad*dir", ".." + os.path.sep])
+    @pytest.fixture(params=[":a", "///:*this_is_a_bad_dir*:///", "another*bad*dir", ".." + os.path.sep])
     def bad_dir(self, request):
         """Return a bad name of a directory."""
         return request.param
