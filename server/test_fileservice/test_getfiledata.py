@@ -16,10 +16,15 @@ from ..FileService import get_file_data
 class TestGetFileData:
     """Test get_file_data function."""
 
-    def test_bad_file_name(self, bad_file_name):
+    def test_bad_file_name(self, os_system, bad_file_name_win, bad_file_name_lnx):
         """Test bad name raises ValueError"""
         with pytest.raises(ValueError):
-            _ = get_file_data(bad_file_name)
+            if os_system == "Windows":
+                _ = get_file_data(bad_file_name_win)
+            elif os_system == "Linux":
+                _ = get_file_data(bad_file_name_lnx)
+            else:
+                raise NotImplementedError
 
     def test_file_not_exists(self):
         """Test file does not exists raises RuntimeError"""
