@@ -22,7 +22,12 @@ class TestChangeDir:
         return request.param
 
     @pytest.fixture(params=[":a", "///:*this_is_a_bad_dir*:///", "another*bad*dir", ".." + os.path.sep])
-    def bad_dir(self, request):
+    def bad_dir_win(self, request):
+        """Return a bad name of a directory."""
+        return request.param
+
+    @pytest.fixture(params=["\0", "a" * 300])
+    def bad_dir_lnx(self, request):
         """Return a bad name of a directory."""
         return request.param
 
@@ -43,7 +48,12 @@ class TestChangeDir:
         with pytest.raises(RuntimeError):
             change_dir(good_dir, autocreate=False)
 
-    def test_change_to_invalid_dir(self, bad_dir):
+    def test_change_to_invalid_dir(self, os_system, bad_dir_win, bad_dir_lnx):
         """Raise ValueError if path is invalid."""
         with pytest.raises(ValueError):
-            change_dir(bad_dir, autocreate=True)
+            if os_system == "Windows":
+                change_dir(bad_dir_win, autocreate=True)
+            elif os_system == "Linux":
+                change_dir(bad_dir_lnx, autocreate=True)
+            else:
+                raise NotImplementedError
