@@ -13,15 +13,13 @@ import sys
 
 import yaml
 
+from config import Config
 from server.FileService import FileService
 
-DEFAULT_LOG_FILE = "server.log"
 STANDARD_LOG_LEVELS = list(logging._nameToLevel.keys())
-DEFAULT_LOG_LEVEL = "INFO"
-LOG_CONFIG_FILE = "log_conf.yaml"
 
 
-def set_logger(logfile: str, loglevel: str):
+def set_logger(log_config: str, logfile: str, loglevel: str):
     """Set logger parameters.
 
     Args:
@@ -29,13 +27,15 @@ def set_logger(logfile: str, loglevel: str):
         loglevel: logging level`
     """
 
+    loglevel = loglevel.upper()
+
     # Let's create a directory for logs
     log_dir = os.path.dirname(logfile)
     if not os.path.exists(log_dir) and FileService.is_pathname_valid(log_dir):
         os.makedirs(log_dir, exist_ok=True)
 
     conf_dict = dict()
-    with open(LOG_CONFIG_FILE, "r") as f:
+    with open(log_config, "r") as f:
         conf_dict = yaml.load(f, Loader=yaml.Loader)
 
     if logfile == "-":
@@ -56,17 +56,21 @@ def set_logger(logfile: str, loglevel: str):
 def main(args: argparse.Namespace):
     """Main function."""
 
-    set_logger(args.logfile, args.loglevel)
+    config = Config(args.config_file)
+    config.env_override()
+    config.cli_override(args)
+
+    server_config = config.config
+    set_logger(server_config["log_config"], server_config["log_file"], server_config["log_level"])
 
     logging.info("Server started")
 
     fs = FileService()
 
-    # Set data directory
     try:
-        fs.change_dir(args.datadir, autocreate=True)
+        fs.change_dir(server_config["data_directory"], autocreate=True)
     except ValueError:
-        logging.error(f"Bad data directory: {args.datadir}")
+        logging.error(f'Bad data directory: {server_config["data_directory"]}')
     finally:
         logging.info("Server stopped")
 
@@ -74,22 +78,29 @@ def main(args: argparse.Namespace):
 if __name__ == "__main__":
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-d", "--data-directory", dest="datadir", required=True, help="Data directory (reqired).")
+        parser.add_argument("-d", "--data-directory", dest="data_directory", help="Data directory.")
         parser.add_argument(
             "-l",
             "--log-file",
-            dest="logfile",
-            default=DEFAULT_LOG_FILE,
-            help="Log filename. Default: {DEFAULT_LOG_FILE}.",
+            dest="log_file",
+            #default=DEFAULT_CONFIG["log_file"],
+            help=f"Log filename. Default: {Config.DEFAULT_CONFIG['log_file']}.",
         )
         parser.add_argument(
             "-L",
             "--log-level",
-            dest="loglevel",
+            dest="log_level",
             choices=STANDARD_LOG_LEVELS,
-            default=DEFAULT_LOG_LEVEL,
-            help="Log level. Default: INFO.",
-            type=str.upper
+            #default=DEFAULT_CONFIG["log_level"],
+            help=f"Log level. Default: {Config.DEFAULT_CONFIG['log_level']}.",
+            type=str.upper,
+        )
+        parser.add_argument(
+            "-c",
+            "--config-file",
+            dest="config_file",
+            default=Config.DEFAULT_CONFIG_FILE,
+            help=f"Configuration file. Default: {Config.DEFAULT_CONFIG_FILE}.",
         )
 
         args = parser.parse_args()

@@ -28,37 +28,16 @@
             ],
         },
         {
-            "name": "Python: main -d -l -L",
+            "name": "Python: main -d -l -L -c",
             "type": "python",
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "-d", 
-                "data",
-                "--log-file",
-                "logs/server.log",
-                "--log-level",
-                "DEBUG"
+                "-c",
+                "server.conf",
             ],
         },
-        {
-            "name": "Python: main log console only",
-            "type": "python",
-            "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "-d", 
-                "data",
-                "--log-file",
-                "-",
-                "--log-level",
-                "DEBUG"
-            ],
-        }
-
     ]
 }
