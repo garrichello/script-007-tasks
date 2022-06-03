@@ -30,6 +30,13 @@ class Config:
         "LOG_LEVEL": "log_level",
     }
 
+    CONFIG_INFO = {
+        "data_directory": {"dest": "data_directory", "env": "DATA_DIR", "default": "data"},
+        "log_config": {"dest": "log_config", "env": "LOG_CONFIG", "default": "log.conf"},
+        "log_file": {"dest": "log_file", "env": "LOG_FILE", "default": "server.log"},
+        "log_level":{"dest": "log_level", "env": "LOG_LEVEL", "default": "INFO"} ,
+    }
+
     # This makes me a singleton!
     def __new__(cls, config_file):
         if not hasattr(cls, "instance"):
