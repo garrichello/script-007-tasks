@@ -22,7 +22,7 @@ LOG_CONFIG_FILE = "log_conf.yaml"
 
 
 def set_logger(logfile: str, loglevel: str):
-    """Set logger parameters
+    """Set logger parameters.
 
     Args:
         logfile: log filename
