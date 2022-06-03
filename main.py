@@ -89,6 +89,7 @@ if __name__ == "__main__":
             choices=STANDARD_LOG_LEVELS,
             default=DEFAULT_LOG_LEVEL,
             help="Log level. Default: INFO.",
+            type=str.upper
         )
 
         args = parser.parse_args()
