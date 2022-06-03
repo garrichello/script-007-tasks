@@ -13,7 +13,7 @@ import sys
 
 import yaml
 
-from config import DEFAULT_CONFIG, DEFAULT_CONFIG_FILE, Config
+from config import Config
 from server.FileService import FileService
 
 STANDARD_LOG_LEVELS = list(logging._nameToLevel.keys())
@@ -26,6 +26,8 @@ def set_logger(log_config: str, logfile: str, loglevel: str):
         logfile: log filename
         loglevel: logging level`
     """
+
+    loglevel = loglevel.upper()
 
     # Let's create a directory for logs
     log_dir = os.path.dirname(logfile)
@@ -82,7 +84,7 @@ if __name__ == "__main__":
             "--log-file",
             dest="log_file",
             #default=DEFAULT_CONFIG["log_file"],
-            help=f"Log filename. Default: {DEFAULT_CONFIG['log_file']}.",
+            help=f"Log filename. Default: {Config.DEFAULT_CONFIG['log_file']}.",
         )
         parser.add_argument(
             "-L",
@@ -90,15 +92,15 @@ if __name__ == "__main__":
             dest="log_level",
             choices=STANDARD_LOG_LEVELS,
             #default=DEFAULT_CONFIG["log_level"],
-            help=f"Log level. Default: {DEFAULT_CONFIG['log_level']}.",
+            help=f"Log level. Default: {Config.DEFAULT_CONFIG['log_level']}.",
             type=str.upper,
         )
         parser.add_argument(
             "-c",
             "--config-file",
             dest="config_file",
-            default=DEFAULT_CONFIG_FILE,
-            help=f"Configuration file. Default: {DEFAULT_CONFIG_FILE}.",
+            default=Config.DEFAULT_CONFIG_FILE,
+            help=f"Configuration file. Default: {Config.DEFAULT_CONFIG_FILE}.",
         )
 
         args = parser.parse_args()
