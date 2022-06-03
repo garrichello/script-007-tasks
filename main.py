@@ -42,6 +42,7 @@ def set_logger(logfile: str, loglevel: str):
     conf_dict["root"]["level"] = loglevel
 
     if args.logfile == "-":
+        # Set log output to console only.
         conf_dict["root"]["handlers"] = ["console"]
 
     logging.config.dictConfig(conf_dict)
