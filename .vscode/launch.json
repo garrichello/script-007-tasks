@@ -42,6 +42,23 @@
                 "--log-level",
                 "DEBUG"
             ],
+        },
+        {
+            "name": "Python: main log console only",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-d", 
+                "data",
+                "--log-file",
+                "-",
+                "--log-level",
+                "DEBUG"
+            ],
         }
+
     ]
 }
