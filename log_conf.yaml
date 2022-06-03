@@ -1,9 +1,9 @@
 version: 1
 formatters:
   default:
-    format: '%(asctime)s %(levelname)8s: %(module)s.%(funcName)s: %(message)s'
+    format: '%(asctime)s %(levelname)8s: %(name)s.%(funcName)s(): %(message)s'
   to_file:
-    format: '[%(asctime)s] %(levelname)8s: %(module)s.%(funcName)s: %(message)s'
+    format: '[%(asctime)s] %(levelname)8s: %(name)s.%(funcName)s(): %(message)s'
 handlers:
   console:
     class: logging.StreamHandler
