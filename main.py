@@ -18,7 +18,7 @@ from server import FileService
 DEFAULT_LOG_FILE = "server.log"
 STANDARD_LOG_LEVELS = list(logging._nameToLevel.keys())
 DEFAULT_LOG_LEVEL = "INFO"
-
+LOG_CONFIG_FILE = "log_conf.yaml"
 
 def set_logger(logfile: str, loglevel: str):
     """Set logger parameters
@@ -33,7 +33,7 @@ def set_logger(logfile: str, loglevel: str):
     if not os.path.exists(log_dir) and FileService.is_pathname_valid(log_dir):
         os.makedirs(log_dir, exist_ok=True)
 
-    with open("log_conf.yaml", "r") as f:
+    with open(LOG_CONFIG_FILE, "r") as f:
         conf_dict = yaml.load(f, Loader=yaml.Loader)
 
     conf_dict["handlers"]["file"]["filename"] = logfile
