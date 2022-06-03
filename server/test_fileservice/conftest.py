@@ -21,9 +21,11 @@ import pytest
 MIN_TEST_FILE_LEN = 16
 MAX_TEST_FILE_LEN = 1024
 
+
 @pytest.fixture
 def os_system():
     return platform.system()
+
 
 @pytest.fixture(autouse=True)
 def chdir_to_tmp_path(tmp_path):
@@ -33,6 +35,24 @@ def chdir_to_tmp_path(tmp_path):
 @pytest.fixture
 def test_file_len():
     return random.randint(MIN_TEST_FILE_LEN, MAX_TEST_FILE_LEN)
+
+
+@pytest.fixture(params=["aNewDir", os.path.join("complex", "dir")])
+def good_dir(request):
+    """Return a good name of a directory."""
+    return request.param
+
+
+@pytest.fixture(params=[":a", "///:*this_is_a_bad_dir*:///", "another*bad*dir", ".." + os.path.sep])
+def bad_dir_win(request):
+    """Return a bad name of a directory."""
+    return request.param
+
+
+@pytest.fixture(params=["\0", "a" * 300])
+def bad_dir_lnx(request):
+    """Return a bad name of a directory."""
+    return request.param
 
 
 @pytest.fixture
@@ -59,7 +79,7 @@ def bad_file_name_win(request):
     return request.param
 
 
-@pytest.fixture(params=["\0", "a"*300])
+@pytest.fixture(params=["\0", "a" * 300])
 def bad_file_name_lnx(request):
     """Return a bad name of a file."""
     return request.param

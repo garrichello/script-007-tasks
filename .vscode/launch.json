@@ -5,15 +5,60 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: main -d",
             "type": "python",
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "-d data",
+                "-d", 
+                "data",
+            ],
+        },
+        {
+            "name": "Python: main -h",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-h", 
+            ],
+        },
+        {
+            "name": "Python: main -d -l -L",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-d", 
+                "data",
+                "--log-file",
+                "logs/server.log",
+                "--log-level",
+                "DEBUG"
+            ],
+        },
+        {
+            "name": "Python: main log console only",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "-d", 
+                "data",
+                "--log-file",
+                "-",
+                "--log-level",
+                "DEBUG"
             ],
         }
+
     ]
 }
