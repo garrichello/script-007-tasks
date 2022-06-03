@@ -11,12 +11,19 @@ import logging.config
 import os
 import sys
 
+<<<<<<< HEAD
 import yaml
 
 from config import Config
 from server.FileService import FileService
 
 STANDARD_LOG_LEVELS = list(logging._nameToLevel.keys())
+=======
+from aiohttp import web
+
+from server.WebHandler import WebHandler
+from utils.Config import config
+>>>>>>> 1e4a56d (Add 05_rest_api)
 
 
 def set_logger(log_config: str, logfile: str, loglevel: str):
@@ -59,6 +66,13 @@ def main(args: argparse.Namespace):
     config = Config(args.config_file)
     config.env_override()
     config.cli_override(args)
+    handler = WebHandler()
+    app = web.Application()
+    app.add_routes([
+        web.get('/', handler.handle),
+        # TODO: add more routes
+    ])
+    web.run_app(app, port=config.port)
 
     server_config = config.config
     set_logger(server_config["log_config"], server_config["log_file"], server_config["log_level"])
