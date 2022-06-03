@@ -16,11 +16,11 @@ Provides functions:
 
 import errno
 import glob
+import logging
 import os
+import shutil
 from datetime import datetime
-
-# Windows-specific error code indicating an invalid pathname.
-ERROR_INVALID_NAME = 123
+from pathlib import Path
 
 
 def is_pathname_valid(pathname: str) -> bool:
@@ -34,10 +34,12 @@ def is_pathname_valid(pathname: str) -> bool:
     Borrowed here: https://stackoverflow.com/questions/9532499/check-whether-a-path-is-valid-in-python-without-creating-a-file-at-the-paths-ta
     And slightly modified.
     """
+    # Windows-specific error code indicating an invalid pathname.
+    ERROR_INVALID_NAME = 123
 
     # If this pathname is either not a string or is but is empty, this pathname is invalid.
     try:
-        if not isinstance(pathname, str) or ".." in pathname or not pathname.strip():
+        if not isinstance(pathname, str) or not pathname.strip():
             return False
 
         # Strip this pathname's Windows-specific drive specifier (e.g., `C:\`) if any.
@@ -49,6 +51,8 @@ def is_pathname_valid(pathname: str) -> bool:
         # Test whether each path component split from this pathname is valid or
         # not, ignoring non-existent and non-readable path components.
         for pathname_part in pathname.split(os.path.sep):
+            if pathname_part == ".." or ":" in pathname_part:
+                return False
             try:
                 os.lstat(root_dirname + pathname_part)
             # If an OS-specific exception is raised, its error code
@@ -114,6 +118,9 @@ def change_dir(path: str, autocreate: bool = True) -> None:
         ValueError: if path is invalid.
     """
 
+    autocreate_mode = "with" if autocreate else "withOUT"
+    logging.debug(f'Changing current directory to "{path}" {autocreate_mode} autocreate')
+
     if not is_pathname_valid(path):
         raise ValueError(f"Bad path: {path}")
     if not os.path.exists(path) and not autocreate:
@@ -125,6 +132,8 @@ def change_dir(path: str, autocreate: bool = True) -> None:
         raise ValueError(f"Bad path: {path}")
     os.chdir(path)
 
+    logging.debug(f"Done")
+
 
 def delete_dir(path: str, recursive: bool = True) -> None:
     """Delete specified directory.
@@ -135,11 +144,29 @@ def delete_dir(path: str, recursive: bool = True) -> None:
         recursive (bool): if True delete all files and child directories recursively before deletion.
 
     Raises:
-        RuntimeError: if directory does not exist or directory contains files and recursive is False.
+        FileNotFoundError: if directory does not exist.
+        RuntimeError: if directory contains files and recursive is False.
         ValueError: if path is invalid.
     """
-    
-    pass
+
+    logging.debug(f'Removing directory "{path}"')
+
+    if not is_pathname_valid(path):
+        raise ValueError(f"Bad path: {path}")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Directory does not exist: {path}")
+    if os.listdir(path) and not recursive:
+        raise RuntimeError(f"Directory is not empty: {path}")
+
+    if os.getcwd() == os.path.abspath(path):
+        # If we try to delete the current directory, then go to its parent.
+        parent_dir = str(Path(path).parent.absolute())
+        os.chdir(parent_dir)
+    if recursive:
+        shutil.rmtree(path)
+    else:
+        os.rmdir(path)
+    logging.debug(f"Done")
 
 
 def get_files() -> list:
@@ -153,12 +180,18 @@ def get_files() -> list:
         - size (int): size of file in bytes.
     """
 
+    logging.debug("Getting files list")
+
     result = list()
     cur_dir = os.path.join(os.getcwd(), "*")
-    for filename in glob.glob(cur_dir):
+    files = glob.glob(cur_dir)
+    for filename in files:
         if os.path.isfile(filename):
             file_meta = get_file_metadata(filename)
             result.append(file_meta)
+
+    logging.debug(f"{len(files)} files found")
+
     return result
 
 
@@ -181,6 +214,8 @@ def get_file_data(filename: str) -> dict:
         ValueError: if filename is invalid.
     """
 
+    logging.debug(f'Reading file "{filename}"')
+
     if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
     if not os.path.exists(filename):
@@ -193,6 +228,8 @@ def get_file_data(filename: str) -> dict:
     with open(filename, "rb") as f:
         content = f.read()
     result["content"] = content  # type: ignore
+
+    logging.debug(f"{len(content)} bytes read")
 
     return result
 
@@ -215,6 +252,8 @@ def create_file(filename: str, content: bytes) -> dict:
         ValueError: if filename is invalid.
     """
 
+    logging.debug(f'Creating file "{filename}"')
+
     if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
 
@@ -224,6 +263,8 @@ def create_file(filename: str, content: bytes) -> dict:
     file_meta = get_file_metadata(filename)
     file_meta["content"] = content  # type: ignore
     del file_meta["edit_date"]
+
+    logging.debug(f"{len(content)} bytes written")
 
     return file_meta
 
@@ -239,9 +280,13 @@ def delete_file(filename: str) -> None:
         ValueError: if filename is invalid.
     """
 
+    logging.debug(f"Deleting file {filename}")
+
     if not is_pathname_valid(filename):
         raise ValueError(f"Bad filename: {filename}")
     if not os.path.exists(filename):
         raise RuntimeError(f"File does not exist: {filename}")
 
     os.remove(filename)
+
+    logging.debug("Done")
