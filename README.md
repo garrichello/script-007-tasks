@@ -43,3 +43,17 @@ Author is Igor Okladnikov.
 
 - [ ] Provide access to files via access policy
 - [ ] Keep users in database
+
+# Database
+
+Connect to database and create database and user:
+
+```sql
+create database fileserver;
+create user fsuser with encrypted password 'fspass';
+grant all privileges on database fileserver to fsuser;
+```
+
+(or do it interactively via pgAdmin, for example)
+
+Update `config.ini`.

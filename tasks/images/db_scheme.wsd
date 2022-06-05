@@ -1,0 +1,27 @@
+@startuml
+
+' hide the spot
+hide circle
+
+' avoid problems with angled crows feet
+skinparam linetype ortho
+
+entity "Users" {
+  * id : number <<generated>>
+  ---
+  *name : varchar(20)
+  *password_hash : varchar(128)
+  last_login: timestamp
+}
+
+entity "Sessions" {
+  *id : number <<generated>>
+  --
+  *user_id : number <<FK>>
+  token: UUID
+  expires: timestamp
+}
+
+Users ||--o{ Sessions
+
+@enduml

@@ -1,0 +1,5 @@
+# See https://www.psycopg.org/docs/install.html#psycopg-vs-psycopg-binary
+psycopg2-binary # recommonded in most cases
+# psycopg2 may require local build
+
+#psycopg[binary] # v3
