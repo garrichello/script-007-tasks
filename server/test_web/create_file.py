@@ -1,7 +1,8 @@
-import requests
-from utils.StrUtils import to_json
+import json
 
-response = requests.post('http://127.0.0.1:8080/files', data=to_json({
+import requests
+
+response = requests.post('http://127.0.0.1:8080/files', data=json.dumps({
     'filename': 'poem.txt',
     'content': 'New file content\r\nIn two lines!',
 }))
