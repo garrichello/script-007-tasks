@@ -8,6 +8,7 @@ Imports:
 import argparse
 import logging
 import logging.config
+import os
 import sys
 
 from aiohttp import web
@@ -30,6 +31,8 @@ def main(args: argparse.Namespace):
     config.set_logger()
 
     server_config = config.config
+    os.makedirs(server_config["data_directory"], exist_ok=True)
+    os.chdir(server_config["data_directory"])
 
     logging.info("Server started")
 
@@ -38,7 +41,13 @@ def main(args: argparse.Namespace):
     app.add_routes(
         [
             web.get("/", handler.handle),
-            # TODO: add more routes
+            web.post("/current_dir", handler.current_dir),
+            web.post("/change_dir", handler.change_dir),
+            web.get("/files", handler.get_files),
+            web.post("/files/{filename}", handler.get_file_data),
+            web.post("/files", handler.create_file),
+            web.delete("/files/{filename}", handler.delete_file),
+            web.post("/delete_dir", handler.delete_dir),
         ]
     )
     web.run_app(app, port=server_config["port"], host=server_config["host"])
@@ -71,7 +80,7 @@ if __name__ == "__main__":
             "-H",
             "--host",
             dest="host",
-            default=default_dict["host"],
+            #default=default_dict["host"],
             help=f"Web server port. Default: {default_dict['host']}.",
         )
         parser.add_argument(
@@ -79,7 +88,7 @@ if __name__ == "__main__":
             "--port",
             dest="port",
             type=int,
-            default=default_dict["port"],
+            #default=default_dict["port"],
             help=f"Web server port. Default: {default_dict['port']}.",
         )
         parser.add_argument(
