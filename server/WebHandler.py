@@ -1,7 +1,7 @@
 """Web handlers module"""
 import base64
 import json
-import os
+import logging
 
 from aiohttp import web
 
@@ -12,7 +12,9 @@ class WebHandler:
     """aiohttp handler with coroutines."""
 
     def __init__(self) -> None:
+        self._logger = logging.getLogger(__name__)
         self._fs = FileService()
+        self._headers = {"Access-Control-Allow-Origin": "*"}
 
     async def handle(self, request: web.Request, *args, **kwargs) -> web.Response:
         """Basic coroutine for connection testing.
@@ -24,7 +26,9 @@ class WebHandler:
             Response: JSON response with status.
         """
 
-        return web.json_response(data={"status": "success"})
+        self._logger.debug(f"{request.path} was requested.")
+
+        return web.json_response(data={"status": "success"}, headers=self._headers)
 
     async def change_dir(self, request: web.Request, *args, **kwargs) -> web.Response:
         """Coroutine for changing working directory with files.
@@ -42,6 +46,8 @@ class WebHandler:
             HTTPBadRequest: 400 HTTP error, if error.
         """
 
+        self._logger.debug(f"{request.path} was requested.")
+
         data = await request.json()
         new_path = data.get("path")
         message = "success"
@@ -53,7 +59,9 @@ class WebHandler:
             message = str(e)
             status = web.HTTPBadRequest.status_code
         finally:
-            return web.json_response(data={"status": message, "current path": cur_path}, status=status)
+            return web.json_response(
+                data={"status": message, "current path": cur_path}, status=status, headers=self._headers
+            )
 
     async def current_dir(self, request: web.Request, *args, **kwargs) -> web.Response:
         """Coroutine for getting working directory.
@@ -68,6 +76,8 @@ class WebHandler:
             HTTPBadRequest: 400 HTTP error, if error.
         """
 
+        self._logger.debug(f"{request.path} was requested.")
+
         message = "success"
         status = web.HTTPOk.status_code
         cur_path = ""
@@ -77,7 +87,9 @@ class WebHandler:
             message = str(e)
             status = web.HTTPBadRequest.status_code
         finally:
-            return web.json_response(data={"status": message, "current path": cur_path}, status=status)
+            return web.json_response(
+                data={"status": message, "current path": cur_path}, status=status, headers=self._headers
+            )
 
     async def delete_dir(self, request: web.Request, *args, **kwargs) -> web.Response:
         """Coroutine for deleteing working directory with files.
@@ -95,6 +107,8 @@ class WebHandler:
             HTTPBadRequest: 400 HTTP error, if error.
         """
 
+        self._logger.debug(f"{request.path} was requested.")
+
         data = await request.json()
         new_dir = data.get("path")
         message = "success"
@@ -105,7 +119,7 @@ class WebHandler:
             message = str(e)
             status = web.HTTPBadRequest.status_code
         finally:
-            return web.json_response(data={"status": message}, status=status)
+            return web.json_response(data={"status": message}, status=status, headers=self._headers)
 
     async def get_files(self, request: web.Request, *args, **kwargs) -> web.Response:
         """Coroutine for getting info about all files in working directory.
@@ -116,6 +130,8 @@ class WebHandler:
         Returns:
             Response: JSON response with success status and data or error status and error message.
         """
+
+        self._logger.debug(f"{request.path} was requested.")
 
         message = "success"
         status = web.HTTPOk.status_code
@@ -131,6 +147,7 @@ class WebHandler:
                 data={"status": message, "data": files_meta, "current path": cur_path},
                 status=status,
                 dumps=lambda x: json.dumps(x, default=str),
+                headers=self._headers,
             )
 
     async def get_file_data(self, request: web.Request, *args, **kwargs) -> web.Response:
@@ -146,6 +163,8 @@ class WebHandler:
             HTTPBadRequest: 400 HTTP error, if error.
         """
 
+        self._logger.debug(f"{request.path} was requested.")
+
         filename = request.match_info["filename"]
 
         message = "success"
@@ -153,7 +172,7 @@ class WebHandler:
         file_data = dict()
         try:
             file_data = self._fs.get_file_data(filename)
-            # file_data['content'] = base64.b64encode(file_data['content']).decode('utf-8')
+            file_data["content"] = base64.b64encode(file_data["content"]).decode("utf-8")
             # Use base64.b64decode(file_data['content']) to restore original bytes
         except Exception as e:
             message = str(e)
@@ -163,6 +182,7 @@ class WebHandler:
                 data={"status": message, "data": file_data},
                 status=status,
                 dumps=lambda x: json.dumps(x, default=str),
+                headers=self._headers,
             )
 
     async def create_file(self, request: web.Request, *args, **kwargs) -> web.Response:
@@ -182,9 +202,11 @@ class WebHandler:
             HTTPBadRequest: 400 HTTP error, if error.
         """
 
+        self._logger.debug(f"{request.path} was requested.")
+
         data = await request.json()
         filename = data.get("filename")
-        content = bytes(data.get("content"), encoding="utf-8")
+        content = base64.b64decode(data.get("content"))
 
         message = "success"
         status = web.HTTPOk.status_code
@@ -196,7 +218,10 @@ class WebHandler:
             status = web.HTTPBadRequest.status_code
         finally:
             return web.json_response(
-                data={"status": message, "data": file_meta}, status=status, dumps=lambda x: json.dumps(x, default=str)
+                data={"status": message, "data": file_meta},
+                status=status,
+                dumps=lambda x: json.dumps(x, default=str),
+                headers=self._headers,
             )
 
     async def delete_file(self, request: web.Request, *args, **kwargs) -> web.Response:
@@ -212,6 +237,7 @@ class WebHandler:
             HTTPBadRequest: 400 HTTP error, if error.
 
         """
+        self._logger.debug(f"{request.path} was requested.")
 
         filename = request.match_info["filename"]
 
@@ -223,4 +249,4 @@ class WebHandler:
             message = str(e)
             status = web.HTTPBadRequest.status_code
         finally:
-            return web.json_response(data={"status": message}, status=status)
+            return web.json_response(data={"status": message}, status=status, headers=self._headers)
