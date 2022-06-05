@@ -98,7 +98,8 @@ mydb=#
 create table users (
   id uuid primary key,
   name varchar(50) not null,
-  register_date timestamp
+  password char(64) not null, -- 32 bytes of sha256 in hex form (multiple by 2)
+  last_login timestamp
 );
 
 create table sessions (
