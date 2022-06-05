@@ -1,17 +1,21 @@
+"""Web handlers module"""
 import json
 
 from aiohttp import web
 
-import server.FileService as FileService
-from utils import StrUtils
+from config import ServerConfig
+
+from .FileService import FileService
 
 
 class WebHandler:
     """aiohttp handler with coroutines."""
 
-    def __init__(self) -> None:
-		# TODO: fix this
-        FileService.change_dir(dir_from_config)
+    def __init__(self, ) -> None:
+        self._server_config = ServerConfig()
+        self._fs = FileService()
+
+        self._fs.change_dir(self._server_config.config["data_directory"])
 
     async def handle(self, request: web.Request, *args, **kwargs) -> web.Response:
         """Basic coroutine for connection testing.
