@@ -11,8 +11,6 @@ import os
 
 import yaml
 
-from server.FileService import FileService
-
 
 class ServerConfig:
     """Stores and manages configuratin of the app"""
@@ -25,7 +23,7 @@ class ServerConfig:
         "log_file": {"dest": "log_file", "env": "LOG_FILE", "default": "server.log"},
         "log_level": {"dest": "log_level", "env": "LOG_LEVEL", "default": "INFO"},
         "host": {"dest": "host", "env": "HOST", "default": "127.0.0.1"},
-        "port": {"dest": "port", "env": "PORT", "default": "8081"},
+        "port": {"dest": "port", "env": "PORT", "default": "8080"},
     }
 
     @classmethod
@@ -70,9 +68,6 @@ class ServerConfig:
         # Always initialize the config with the default values
         self.config = self._default_dict
 
-        if not FileService.is_pathname_valid(config_file):
-            raise ValueError(f"Invalid name of configuration file: {config_file}")
-
         if not os.path.exists(config_file):
             logging.info(f"Configuration file {config_file} not found. Creating with default values.")
             with open(config_file, "w") as f:
@@ -83,6 +78,8 @@ class ServerConfig:
             with open(config_file, "r") as f:
                 file_config = yaml.load(f, Loader=yaml.Loader)
                 self._file_override(file_config)
+
+        self.config["data_directory"] = os.path.abspath(self.config["data_directory"])
 
     def _file_override(self, file_config: dict):
         """Overrides default values with values from the config file"""
@@ -114,23 +111,23 @@ class ServerConfig:
             loglevel: logging level`
         """
 
-        loglevel = self.config['log_level'].upper()
+        loglevel = self.config["log_level"].upper()
 
         # Let's create a directory for logs
-        log_dir = os.path.dirname(os.path.abspath(self.config['log_file']))
+        log_dir = os.path.dirname(os.path.abspath(self.config["log_file"]))
         if not os.path.exists(log_dir):
             os.makedirs(log_dir, exist_ok=True)
 
         conf_dict = dict()
-        with open(self.config['log_config'], "r") as f:
+        with open(self.config["log_config"], "r") as f:
             conf_dict = yaml.load(f, Loader=yaml.Loader)
 
-        if self.config['log_file'] == "-":
+        if self.config["log_file"] == "-":
             # Set log output to console only.
             conf_dict["root"]["handlers"] = ["console"]
             del conf_dict["handlers"]["file"]
         else:
-            conf_dict["handlers"]["file"]["filename"] = self.config['log_file']
+            conf_dict["handlers"]["file"]["filename"] = self.config["log_file"]
             conf_dict["handlers"]["file"]["level"] = loglevel
 
         conf_dict["handlers"]["console"]["level"] = loglevel
