@@ -21,14 +21,17 @@ import logging.config
 import os
 import shutil
 from datetime import datetime
-from pathlib import Path
+
+from config import ServerConfig
 
 
 class FileService:
     """File service class"""
+
     def __init__(self):
         self._logger = logging.getLogger(__name__)
-    
+        self._config = ServerConfig().config
+
     @staticmethod
     def is_pathname_valid(pathname: str) -> bool:
         """
@@ -112,8 +115,20 @@ class FileService:
         )
         return file_meta
 
+    def current_dir(self) -> str:
+        """Get current directory of app.
 
-    def change_dir(self, path: str, autocreate: bool = True) -> None:
+        Returns:
+            Current working directory of tha app
+        """
+
+        cwd = os.getcwd()
+        path = cwd.replace(self._config["data_directory"], ".")
+        self._logger.debug(f"Current directory is {path}")
+
+        return path
+
+    def change_dir(self, path: str, autocreate: bool = True) -> str:
         """Change current directory of app.
 
         Args:
@@ -133,14 +148,19 @@ class FileService:
         if not os.path.exists(path) and not autocreate:
             raise RuntimeError(f"Path does not exist: {path}")
 
+        os.chdir(self._config["data_directory"])
         try:
             os.makedirs(path, exist_ok=autocreate)
         except NotADirectoryError:
             raise ValueError(f"Bad path: {path}")
         os.chdir(path)
 
+        cwd = os.getcwd()
+        new_path = cwd.replace(self._config["data_directory"], ".")
+
         self._logger.debug(f"Done")
 
+        return new_path
 
     def delete_dir(self, path: str, recursive: bool = True) -> None:
         """Delete specified directory.
@@ -157,24 +177,21 @@ class FileService:
         """
 
         self._logger.debug(f'Removing directory "{path}"')
+        dir_to_delete = os.path.join(self._config["data_directory"], path)
 
-        if not self.is_pathname_valid(path):
+        if not self.is_pathname_valid(dir_to_delete):
             raise ValueError(f"Bad path: {path}")
-        if not os.path.exists(path):
+        if not os.path.exists(dir_to_delete):
             raise FileNotFoundError(f"Directory does not exist: {path}")
-        if os.listdir(path) and not recursive:
+        if os.listdir(dir_to_delete) and not recursive:
             raise RuntimeError(f"Directory is not empty: {path}")
 
-        if os.getcwd() == os.path.abspath(path):
-            # If we try to delete the current directory, then go to its parent.
-            parent_dir = str(Path(path).parent.absolute())
-            os.chdir(parent_dir)
+        os.chdir(self._config["data_directory"])
         if recursive:
             shutil.rmtree(path)
         else:
             os.rmdir(path)
         self._logger.debug(f"Done")
-
 
     def get_files(self) -> list:
         """Get info about all files in working directory.
@@ -200,7 +217,6 @@ class FileService:
         self._logger.debug(f"{len(files)} files found")
 
         return result
-
 
     def get_file_data(self, filename: str) -> dict:
         """Get full info about file.
@@ -240,7 +256,6 @@ class FileService:
 
         return result
 
-
     def create_file(self, filename: str, content: bytes) -> dict:
         """Create a new file.
 
@@ -274,7 +289,6 @@ class FileService:
         self._logger.debug(f"{len(content)} bytes written")
 
         return file_meta
-
 
     def delete_file(self, filename: str) -> None:
         """Delete file.
