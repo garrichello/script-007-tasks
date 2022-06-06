@@ -41,7 +41,7 @@ def main(args: argparse.Namespace):
     app.add_routes(
         [
             web.get("/", handler.handle),
-            web.post("/current_dir", handler.current_dir),
+            web.get("/current_dir", handler.current_dir),
             web.post("/change_dir", handler.change_dir),
             web.post("/delete_dir", handler.delete_dir),
 
