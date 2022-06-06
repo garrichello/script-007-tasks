@@ -43,11 +43,12 @@ def main(args: argparse.Namespace):
             web.get("/", handler.handle),
             web.post("/current_dir", handler.current_dir),
             web.post("/change_dir", handler.change_dir),
+            web.post("/delete_dir", handler.delete_dir),
+
             web.get("/files", handler.get_files),
-            web.post("/files/{filename}", handler.get_file_data),
+            web.get("/files/{filename}", handler.get_file_data),
             web.post("/files", handler.create_file),
             web.delete("/files/{filename}", handler.delete_file),
-            web.post("/delete_dir", handler.delete_dir),
         ]
     )
     web.run_app(app, port=server_config["port"], host=server_config["host"])
