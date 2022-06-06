@@ -101,7 +101,7 @@ class FileService:
         # (e.g., a bug). Permit this exception to unwind the call stack.
 
     def _make_path_relative(self, path: str) -> str:
-        return path.replace(self._config["data_directory"], ".")
+        return path.replace(str(self._config["data_directory"]), ".")
     
     def get_file_metadata(self, filename: str):
         """Get file metadata.
