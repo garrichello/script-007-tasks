@@ -58,6 +58,7 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(
                 data={"status": message, "current path": cur_path}, status=status, headers=self._headers
@@ -86,6 +87,7 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(
                 data={"status": message, "current path": cur_path}, status=status, headers=self._headers
@@ -118,6 +120,7 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(data={"status": message}, status=status, headers=self._headers)
 
@@ -142,6 +145,7 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(
                 data={"status": message, "data": files_meta, "current path": cur_path},
@@ -177,6 +181,7 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(
                 data={"status": message, "data": file_data},
@@ -206,7 +211,16 @@ class WebHandler:
 
         data = await request.json()
         filename = data.get("filename")
-        content = base64.b64decode(data.get("content"))
+        # Check content. It should be base64 encoded.
+        try:
+            content = base64.b64decode(data.get("content"))
+        except Exception as e:
+            self._logger.error(f"Bad content for file {filename}")
+            return web.json_response(
+                data={"status": "bad content", "data": {}},
+                status=web.HTTPBadRequest.status_code,
+                headers=self._headers,
+            )
 
         message = "success"
         status = web.HTTPOk.status_code
@@ -216,6 +230,7 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(
                 data={"status": message, "data": file_meta},
@@ -248,5 +263,6 @@ class WebHandler:
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
         finally:
             return web.json_response(data={"status": message}, status=status, headers=self._headers)
