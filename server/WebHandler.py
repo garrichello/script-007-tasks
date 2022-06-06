@@ -1,5 +1,6 @@
 """Web handlers module"""
 import base64
+import copy
 import json
 import logging
 
@@ -117,6 +118,10 @@ class WebHandler:
         status = web.HTTPOk.status_code
         try:
             self._fs.delete_dir(new_dir, recursive=True)
+        except FileNotFoundError as e:
+            message = str(e)
+            status = web.HTTPNotFound.status_code
+            self._logger.error(message)
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
@@ -178,6 +183,10 @@ class WebHandler:
             file_data = self._fs.get_file_data(filename)
             file_data["content"] = base64.b64encode(file_data["content"]).decode("utf-8")
             # Use base64.b64decode(file_data['content']) to restore original bytes
+        except RuntimeError as e:
+            message = str(e)
+            status = web.HTTPNotFound.status_code
+            self._logger.error(message)
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
@@ -223,7 +232,7 @@ class WebHandler:
             )
 
         message = "success"
-        status = web.HTTPOk.status_code
+        status = web.HTTPCreated.status_code
         file_meta = dict()
         try:
             file_meta = self._fs.create_file(filename, content)
@@ -232,11 +241,14 @@ class WebHandler:
             status = web.HTTPBadRequest.status_code
             self._logger.error(message)
         finally:
+            # Add Location header
+            new_headers = copy.copy(self._headers)
+            new_headers['Location'] = request.raw_path+"/"+filename
             return web.json_response(
                 data={"status": message, "data": file_meta},
                 status=status,
                 dumps=lambda x: json.dumps(x, default=str),
-                headers=self._headers,
+                headers=new_headers,
             )
 
     async def delete_file(self, request: web.Request, *args, **kwargs) -> web.Response:
@@ -260,6 +272,10 @@ class WebHandler:
         status = web.HTTPOk.status_code
         try:
             self._fs.delete_file(filename)
+        except RuntimeError as e:
+            message = str(e)
+            status = web.HTTPNotFound.status_code
+            self._logger.error(message)
         except Exception as e:
             message = str(e)
             status = web.HTTPBadRequest.status_code
