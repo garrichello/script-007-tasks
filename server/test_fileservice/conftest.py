@@ -8,6 +8,7 @@ Imports:
     random
 """
 
+import base64
 import copy
 import os
 import platform
@@ -18,6 +19,8 @@ from datetime import datetime
 
 import pytest
 
+from config import ServerConfig
+
 MIN_TEST_FILE_LEN = 16
 MAX_TEST_FILE_LEN = 1024
 
@@ -27,9 +30,17 @@ def os_system():
     return platform.system()
 
 
+@pytest.fixture()
+def tmp_dir():
+    datadir = ServerConfig().config["data_directory"]
+    data_tmp_dir = os.path.join(datadir, str(uuid.uuid4()))
+    os.makedirs(data_tmp_dir, exist_ok=True)
+    return data_tmp_dir
+
 @pytest.fixture(autouse=True)
 def chdir_to_tmp_path(tmp_path):
     os.chdir(str(tmp_path))
+    ServerConfig().config['data_directory'] = tmp_path
 
 
 @pytest.fixture
@@ -84,7 +95,6 @@ def bad_file_name_lnx(request):
     """Return a bad name of a file."""
     return request.param
 
-
 def set_file_info(filename: str, filesize: int) -> dict:
     """Set modification time of a file to a random value. Returns file information.
 
@@ -102,8 +112,9 @@ def set_file_info(filename: str, filesize: int) -> dict:
     m_time = int(random.random() * time.time())
     os.utime(filename, (m_time, m_time))
 
+    rel_filename = filename.replace(str(ServerConfig().config["data_directory"]), ".")
     info = dict(
-        name=filename,
+        name=rel_filename,
         create_date=datetime.fromtimestamp(os.path.getctime(filename)),
         edit_date=datetime.fromtimestamp(m_time),
         size=filesize,
@@ -112,11 +123,11 @@ def set_file_info(filename: str, filesize: int) -> dict:
 
 
 @pytest.fixture
-def sample_binary_file_meta(tmp_path, sample_binary_data_1, test_file_len):
+def sample_binary_file_meta(tmp_dir, sample_binary_data_1, test_file_len):
     """Metadata for a binary file."""
 
     # Create a file and get its info.
-    test_file_name = os.path.join(tmp_path, sample_binary_data_1["name"])
+    test_file_name = os.path.join(tmp_dir, sample_binary_data_1["name"])
     with open(test_file_name, "wb") as file:
         file.write(sample_binary_data_1["data"])
 
@@ -153,10 +164,10 @@ def sample_binary_file_full_info(sample_binary_file_meta, sample_binary_data_1):
 
 
 @pytest.fixture
-def new_binary_file_info(sample_binary_file_meta, sample_binary_data_1):
+def new_binary_file_info(sample_binary_file_meta):
     """Return full info and contents of a new binary file."""
 
     result = copy.copy(sample_binary_file_meta[0])
-    result["content"] = sample_binary_data_1["data"]  # type: ignore
+    # result["content"] = sample_binary_data_1["data"]  # type: ignore
     del result["edit_date"]
     return result
