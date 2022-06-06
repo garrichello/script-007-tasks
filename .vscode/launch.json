@@ -5,26 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: main -d",
+            "name": "Python: main",
             "type": "python",
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": [
-                "-d", 
-                "data",
-            ],
         },
         {
-            "name": "Python: main -h",
+            "name": "Python: main -a 0.0.0.0",
             "type": "python",
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "-h", 
+                "-H", 
+                "0.0.0.0"
             ],
         },
         {

@@ -31,8 +31,8 @@ class TestGetFileData:
         with pytest.raises(RuntimeError):
             _ = FileService().get_file_data("non_existing_file")
 
-    def test_get_one_file_meta(self, sample_binary_file_full_info, tmp_path, sample_binary_data_1):
+    def test_get_one_file_meta(self, sample_binary_file_full_info, tmp_dir, sample_binary_data_1):
         """Test if get_files returns a list with metadata of a file."""
-        target_filename = os.path.join(tmp_path, sample_binary_data_1["name"])
+        target_filename = os.path.join(tmp_dir, sample_binary_data_1["name"])
         file_full_info = FileService().get_file_data(target_filename)
         assert file_full_info == sample_binary_file_full_info

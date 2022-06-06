@@ -26,8 +26,8 @@ class TestCreateFile:
             else:
                 raise NotImplementedError
 
-    def test_create_new_binary_file(self, new_binary_file_info, tmp_path, sample_binary_data_1):
+    def test_create_new_binary_file(self, new_binary_file_info, tmp_dir, sample_binary_data_1):
         """Test if get_files returns a list with metadata of a file."""
-        target_filename = os.path.join(tmp_path, sample_binary_data_1["name"])
+        target_filename = os.path.join(tmp_dir, sample_binary_data_1["name"])
         file_full_info = FileService().create_file(target_filename, sample_binary_data_1["data"])
         assert file_full_info == new_binary_file_info

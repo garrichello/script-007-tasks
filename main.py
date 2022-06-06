@@ -11,71 +11,53 @@ import logging.config
 import os
 import sys
 
-import yaml
+from aiohttp import web
 
-from config import Config
-from server.FileService import FileService
+from config import ServerConfig
+from server.WebHandler import WebHandler
 
 STANDARD_LOG_LEVELS = list(logging._nameToLevel.keys())
-
-
-def set_logger(log_config: str, logfile: str, loglevel: str):
-    """Set logger parameters.
-
-    Args:
-        logfile: log filename
-        loglevel: logging level`
-    """
-
-    loglevel = loglevel.upper()
-
-    # Let's create a directory for logs
-    log_dir = os.path.dirname(logfile)
-    if not os.path.exists(log_dir) and FileService.is_pathname_valid(log_dir):
-        os.makedirs(log_dir, exist_ok=True)
-
-    conf_dict = dict()
-    with open(log_config, "r") as f:
-        conf_dict = yaml.load(f, Loader=yaml.Loader)
-
-    if logfile == "-":
-        # Set log output to console only.
-        conf_dict["root"]["handlers"] = ["console"]
-        del conf_dict["handlers"]["file"]
-    else:
-        conf_dict["handlers"]["file"]["filename"] = logfile
-        conf_dict["handlers"]["file"]["level"] = loglevel
-
-    conf_dict["handlers"]["console"]["level"] = loglevel
-    conf_dict["root"]["level"] = loglevel
-
-    logging.config.dictConfig(conf_dict)
 
 
 #!/usr/bin/env python3
 def main(args: argparse.Namespace):
     """Main function."""
 
-    config = Config(args.config_file)
+    config = ServerConfig()
+    config.read_config_file(args.config_file)
+
     config.env_override()
     config.cli_override(args)
+    config.set_logger()
 
     server_config = config.config
-    set_logger(server_config["log_config"], server_config["log_file"], server_config["log_level"])
+    os.makedirs(server_config["data_directory"], exist_ok=True)
+    os.chdir(server_config["data_directory"])
 
     logging.info("Server started")
 
-    fs = FileService()
+    handler = WebHandler()
+    app = web.Application()
+    app.add_routes(
+        [
+            web.get("/", handler.handle),
+            web.get("/current_dir", handler.current_dir),
+            web.post("/change_dir", handler.change_dir),
+            web.post("/delete_dir", handler.delete_dir),
 
-    try:
-        fs.change_dir(server_config["data_directory"], autocreate=True)
-    except ValueError:
-        logging.error(f'Bad data directory: {server_config["data_directory"]}')
-    finally:
-        logging.info("Server stopped")
+            web.get("/files", handler.get_files),
+            web.get("/files/{filename}", handler.get_file_data),
+            web.post("/files", handler.create_file),
+            web.delete("/files/{filename}", handler.delete_file),
+        ]
+    )
+    web.run_app(app, port=server_config["port"], host=server_config["host"])
+
+    logging.info("Server stopped")
 
 
 if __name__ == "__main__":
+    default_dict = ServerConfig.extract_dict("default")
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument("-d", "--data-directory", dest="data_directory", help="Data directory.")
@@ -83,24 +65,39 @@ if __name__ == "__main__":
             "-l",
             "--log-file",
             dest="log_file",
-            #default=DEFAULT_CONFIG["log_file"],
-            help=f"Log filename. Default: {Config.DEFAULT_CONFIG['log_file']}.",
+            # default=DEFAULT_CONFIG["log_file"],
+            help=f"Log filename. Default: {default_dict['log_file']}.",
         )
         parser.add_argument(
             "-L",
             "--log-level",
             dest="log_level",
             choices=STANDARD_LOG_LEVELS,
-            #default=DEFAULT_CONFIG["log_level"],
-            help=f"Log level. Default: {Config.DEFAULT_CONFIG['log_level']}.",
+            # default=DEFAULT_CONFIG["log_level"],
+            help=f"Log level. Default: {default_dict['log_level']}.",
             type=str.upper,
+        )
+        parser.add_argument(
+            "-H",
+            "--host",
+            dest="host",
+            #default=default_dict["host"],
+            help=f"Web server port. Default: {default_dict['host']}.",
+        )
+        parser.add_argument(
+            "-p",
+            "--port",
+            dest="port",
+            type=int,
+            #default=default_dict["port"],
+            help=f"Web server port. Default: {default_dict['port']}.",
         )
         parser.add_argument(
             "-c",
             "--config-file",
             dest="config_file",
-            default=Config.DEFAULT_CONFIG_FILE,
-            help=f"Configuration file. Default: {Config.DEFAULT_CONFIG_FILE}.",
+            default=ServerConfig.DEFAULT_CONFIG_FILE,
+            help=f"Configuration file. Default: {ServerConfig.DEFAULT_CONFIG_FILE}.",
         )
 
         args = parser.parse_args()

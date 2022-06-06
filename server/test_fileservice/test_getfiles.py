@@ -4,6 +4,8 @@ Imports:
     server.FileService.get_files()
 """
 
+import os
+
 from ..FileService import FileService
 
 
@@ -15,9 +17,10 @@ class TestGetFiles:
 
         assert isinstance(FileService().get_files(), list)
 
-    def test_get_one_file_meta(self, sample_binary_file_meta):
+    def test_get_one_file_meta(self, tmp_dir, sample_binary_file_meta):
         """Test if get_files returns a list with metadata of a file."""
 
+        os.chdir(tmp_dir)
         file_meta = FileService().get_files()
         assert file_meta == sample_binary_file_meta
 

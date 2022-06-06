@@ -12,11 +12,11 @@ import shutil
 import subprocess
 import uuid
 
-from main import DEFAULT_LOG_FILE as LOG_FILE
+from config import ServerConfig
 
 DATA_DIR = str(uuid.uuid4())
 EXECUTION_TIMEOUT = 5
-LOG_FILE_ALICE = os.path.join(str(uuid.uuid4()), str(uuid.uuid4())+".log")
+LOG_FILE_ALICE = os.path.join(str(uuid.uuid4()), str(uuid.uuid4()) + ".log")
 OS_NAME = platform.system()
 
 if OS_NAME == "Windows":
@@ -34,6 +34,7 @@ def capture(command):
         stderr=subprocess.PIPE,
     )
     out, err = proc.communicate(timeout=EXECUTION_TIMEOUT)
+    proc.terminate()
     return out, err, proc.returncode
 
 
@@ -42,6 +43,9 @@ def clean_up(func):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
+        global LOG_FILE
+        default_dict = ServerConfig.extract_dict("default")
+        LOG_FILE = default_dict["log_file"]
         try:
             result = func(*args, **kwargs)
         finally:

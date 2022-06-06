@@ -7,6 +7,7 @@ Imports:
 """
 
 import os
+import uuid
 
 import pytest
 
@@ -16,15 +17,14 @@ from ..FileService import FileService
 class TestChangeDir:
     """Test change_dir function."""
 
-    def test_change_to_existing_dir(self, tmp_path):
+    def test_change_to_existing_dir(self, tmp_dir):
         """CWD to an existing directory."""
-        target_dir = str(tmp_path)
-        FileService().change_dir(target_dir)
-        assert os.getcwd() == target_dir
+        FileService().change_dir(tmp_dir)
+        assert os.getcwd() == tmp_dir
 
-    def test_change_to_nonexisting_dir_with_autocreate(self, tmp_path, good_dir):
+    def test_change_to_nonexisting_dir_with_autocreate(self, tmp_dir, good_dir):
         """Autocreate a nonexistent directory and CWD to it."""
-        target_dir = os.path.join(str(tmp_path), good_dir)
+        target_dir = os.path.join(str(tmp_dir), good_dir)
         FileService().change_dir(target_dir, autocreate=True)
         assert os.getcwd() == target_dir
 

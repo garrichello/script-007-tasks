@@ -28,10 +28,10 @@ Author is Igor Okladnikov.
 
 ## Web Service
 
-- [ ] Specify web-server port via CLI arguments
-- [ ] Work independently without WSGI
-- [ ] Suit with RESTful API requirements
-- [ ] Use asynchronous programming concept (aiohttp?)
+- [x] Specify web-server port via CLI arguments
+- [x] Work independently without WSGI
+- [x] Suit with RESTful API requirements
+- [x] Use asynchronous programming concept (aiohttp?)
 - [ ] Use multithreading for downloading files
 - [ ] Partial file download (http range)
 
