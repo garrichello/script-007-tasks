@@ -100,15 +100,17 @@ class FileService:
         # If any other exception was raised, this is an unrelated fatal issue
         # (e.g., a bug). Permit this exception to unwind the call stack.
 
-    @staticmethod
-    def get_file_metadata(filename: str):
+    def _make_path_relative(self, path: str) -> str:
+        return path.replace(self._config["data_directory"], ".")
+    
+    def get_file_metadata(self, filename: str):
         """Get file metadata.
 
         Args:
             filename (str): file name
         """
         file_meta = dict(
-            name=filename,
+            name=self._make_path_relative(filename),
             create_date=datetime.fromtimestamp(os.path.getctime(filename)),
             edit_date=datetime.fromtimestamp(os.path.getmtime(filename)),
             size=os.path.getsize(filename),
@@ -122,8 +124,7 @@ class FileService:
             Current working directory of tha app
         """
 
-        cwd = os.getcwd()
-        path = cwd.replace(self._config["data_directory"], ".")
+        path = self._make_path_relative(os.getcwd())
         self._logger.debug(f"Current directory is {path}")
 
         return path
@@ -155,8 +156,7 @@ class FileService:
             raise ValueError(f"Bad path: {path}")
         os.chdir(path)
 
-        cwd = os.getcwd()
-        new_path = cwd.replace(self._config["data_directory"], ".")
+        new_path = self._make_path_relative(os.getcwd())
 
         self._logger.debug(f"Done")
 
@@ -283,7 +283,6 @@ class FileService:
             f.write(content)
 
         file_meta = self.get_file_metadata(filename)
-        file_meta["content"] = content  # type: ignore
         del file_meta["edit_date"]
 
         self._logger.debug(f"{len(content)} bytes written")
