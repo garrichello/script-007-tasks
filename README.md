@@ -29,7 +29,7 @@ Author is Igor Okladnikov.
 ## Web Service
 
 - [x] Specify web-server port via CLI arguments
-- [x] Work independently without WSGI
+- [ ] Work independently without WSGI
 - [x] Suit with RESTful API requirements
 - [x] Use asynchronous programming concept (aiohttp?)
 - [ ] Use multithreading for downloading files
@@ -42,7 +42,7 @@ Author is Igor Okladnikov.
 ## Auth Service
 
 - [ ] Provide access to files via access policy
-- [ ] Keep users in database
+- [x] Keep users in database
 
 # Database
 
