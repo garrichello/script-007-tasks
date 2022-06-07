@@ -4,9 +4,12 @@ import copy
 import json
 import logging
 
-from aiohttp import web
+from aiohttp import BasicAuth, hdrs, web
+
+from auth import BasicAuthMiddleware as auth
 
 from .FileService import FileService
+from .UserService import UserService
 
 
 class WebHandler:
@@ -15,6 +18,7 @@ class WebHandler:
     def __init__(self) -> None:
         self._logger = logging.getLogger(__name__)
         self._fs = FileService()
+        self._us = UserService()
         self._headers = {"Access-Control-Allow-Origin": "*"}
 
     async def handle(self, request: web.Request, *args, **kwargs) -> web.Response:
@@ -243,7 +247,7 @@ class WebHandler:
         finally:
             # Add Location header
             new_headers = copy.copy(self._headers)
-            new_headers['Location'] = request.raw_path+"/"+filename
+            new_headers["Location"] = request.raw_path + "/" + filename
             return web.json_response(
                 data={"status": message, "data": file_meta},
                 status=status,
@@ -282,3 +286,68 @@ class WebHandler:
             self._logger.error(message)
         finally:
             return web.json_response(data={"status": message}, status=status, headers=self._headers)
+
+    async def register(self, request: web.Request, *args, **kwargs) -> web.Response:
+        """Register a new user"""
+
+        self._logger.debug(f"Registering a new user was requested.")
+
+        message = ""
+        status = web.HTTPOk.status_code
+        if "Authorization" in request.headers:
+            auth_info = request.headers["Authorization"].split()
+            if len(auth_info) == 2:
+                auth_val = auth_info[1]
+                try:
+                    username, password = base64.b64decode(auth_val).decode("utf-8").split(":")
+                except:
+                    message = "Bad 'Authorization' value!"
+                    status = web.HTTPBadRequest.status_code
+                    self._logger.error(message)
+                    return web.json_response(data={"status": message}, status=status, headers=self._headers)
+                if self._us.register(username=username, password=password):
+                    message = "success"
+                    status = web.HTTPOk.status_code
+                    self._logger.debug(f"User '{username}' registered.")
+                else:
+                    message = f"User '{username}' already registered!"
+                    status = web.HTTPBadRequest.status_code
+                    self._logger.error(message)
+            else:
+                message = "Bad 'Authorization' value!"
+                status = web.HTTPBadRequest.status_code
+                self._logger.error(message)
+        else:
+            message = "No 'Authorization' HTTP-header!"
+            status = web.HTTPBadRequest.status_code
+            self._logger.error(message)
+        return web.json_response(data={"status": message}, status=status, headers=self._headers)
+
+    @auth.required
+    async def login(self, request: web.Request, *args, **kwargs) -> web.Response:
+        """Login a new user"""
+
+        self._logger.debug(f"User login was requested.")
+
+        if request.body_exists:
+            body = await request.json()
+        else:
+            body = {}
+        token = body.get('token', '')
+
+        if not token:
+            # Get a new token.
+            status = ""
+            auth_header = request.headers.get(hdrs.AUTHORIZATION, "")
+            if auth_header:
+                auth = BasicAuth.decode(auth_header=auth_header)
+                token = self._us.login(username=auth.login)
+            
+        if token:
+            message = "success"
+            status = web.HTTPOk.status_code
+        else:
+            message = "Authentication failed"
+            status = web.HTTPUnauthorized.status_code
+        
+        return web.json_response(data={"status": message, "token": token}, status=status, headers=self._headers)
