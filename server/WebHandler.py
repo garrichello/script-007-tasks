@@ -295,6 +295,7 @@ class WebHandler:
         message = ""
         status = web.HTTPOk.status_code
         if "Authorization" in request.headers:
+            # Authorization header value should be: "basic <base64-encoded-pair-login:password>"
             auth_info = request.headers["Authorization"].split()
             if len(auth_info) == 2:
                 auth_val = auth_info[1]
