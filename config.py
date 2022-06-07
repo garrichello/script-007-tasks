@@ -24,6 +24,11 @@ class ServerConfig:
         "log_level": {"dest": "log_level", "env": "LOG_LEVEL", "default": "INFO"},
         "host": {"dest": "host", "env": "HOST", "default": "127.0.0.1"},
         "port": {"dest": "port", "env": "PORT", "default": "8080"},
+        "db_user": {"dest": "db_user", "env": "DB_USER", "default": "postgres"},
+        "db_pw": {"dest": "db_pw", "env": "DB_PASSWORD", "default": "postgrespw"},
+        "db_host": {"dest": "db_host", "env": "DB_HOST", "default": "127.0.0.1"},
+        "db_port": {"dest": "db_port", "env": "DB_PORT", "default": 49153},
+        "db_name": {"dest": "db_name", "env": "DB_NAME", "default": "users_db"},
     }
 
     @classmethod
