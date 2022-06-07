@@ -1,53 +1,53 @@
-import psycopg2
-from utils.Config import config
+import datetime
+import logging
+import uuid
+
+from sqlalchemy.orm import Session
+
+import models
+import utils
+from db import UserDB
 
 
 class UserService:
-
     def __init__(self):
-        self.conn = psycopg2.connect(
-            host=config.database.host,
-            port=config.database.port,
-            dbname=config.database.name,
-            user=config.database.user,
-            password=config.database.password,
-        )
-        self.cur = self.conn.cursor()
-        self.cur.autocommit = True
+        self._logger = logging.getLogger(__name__)
 
-        query = """
-create table if not exists users (
-  id uuid primary key,
-  name varchar(50) not null,
-  password char(64) not null, -- 32 bytes of sha256 in hex form (multiple by 2)
-  registration timestamp,
-  last_login timestamp
-);
+    def register(self, username: str, password: str) -> bool:
+        """Register a new user in the DB"""
+        with Session(UserDB.engine) as session:
+            instance = session.query(models.User).filter_by(name=username).first()
+            if instance:
+                return False
 
-create table if not exists sessions (
-  id uuid primary key,
-  user_id uuid references users(id),
-  expires timestamp
-);
-"""
+            salt = uuid.uuid4().hex
+            password_hash = utils.get_sha256_salted(data=password, salt=salt)
+            user = models.User(name=username, password_hash=password_hash, last_login=None)
 
-    def __del__(self) -> None:
-        self.cur.close()
-        self.conn.close()
+            session.add(user)
 
+            session.commit()
 
-def register(username: str, password: str) -> None:
-    query = "insert into users (id, name, registration, lost_login) values (?, ?, ?, ?)"
+        return True
 
+    def login(self, username: str) -> str:
+        "Login user"
+        now = datetime.datetime.now()
+        expires = now + datetime.timedelta(days=utils.EXPIRATION_DAYS)
+        token = str(uuid.uuid4())
 
+        with Session(UserDB.engine) as session:
+            user = session.query(models.User).filter_by(name=username).first()
+            if user:
+                user.last_login = now
+                new_sess = models.Sessions(user_id=user.id, token=token, expires=expires)
+                session.add(new_sess)
+                session.commit()
+            else:
+                token = ""
+        if token:
+            self._logger.debug(f"User {username} logged in!")
+        else:
+            self._logger.error(f"User {username} not found")
 
-def login(username: str, password: str) -> None:
-    pass
-
-
-def check_auth(token: str) -> bool:
-    pass
-
-
-def logout(token: str) -> None:
-    pass
+        return token
