@@ -29,7 +29,7 @@ Author is Igor Okladnikov.
 ## Web Service
 
 - [x] Specify web-server port via CLI arguments
-- [x] Work independently without WSGI
+- [ ] Work independently without WSGI
 - [x] Suit with RESTful API requirements
 - [x] Use asynchronous programming concept (aiohttp?)
 - [ ] Use multithreading for downloading files
@@ -42,4 +42,18 @@ Author is Igor Okladnikov.
 ## Auth Service
 
 - [ ] Provide access to files via access policy
-- [ ] Keep users in database
+- [x] Keep users in database
+
+# Database
+
+Connect to database and create database and user:
+
+```sql
+create database fileserver;
+create user fsuser with encrypted password 'fspass';
+grant all privileges on database fileserver to fsuser;
+```
+
+(or do it interactively via pgAdmin, for example)
+
+Update `config.ini`.

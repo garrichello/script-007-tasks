@@ -13,7 +13,9 @@ import sys
 
 from aiohttp import web
 
+from auth import BasicAuthMiddleware
 from config import ServerConfig
+from db import UserDB
 from server.WebHandler import WebHandler
 
 STANDARD_LOG_LEVELS = list(logging._nameToLevel.keys())
@@ -34,10 +36,23 @@ def main(args: argparse.Namespace):
     os.makedirs(server_config["data_directory"], exist_ok=True)
     os.chdir(server_config["data_directory"])
 
+    # Database config
+    db_user = server_config["db_user"]
+    db_pw = server_config["db_pw"]
+    db_host = server_config["db_host"]
+    db_port = server_config["db_port"]
+    db_name = server_config["db_name"]
+
+    user_db = UserDB(db_user, db_pw, db_host, db_port, db_name)
+    if args.init_db:
+        user_db.init_db()
+        return
+
     logging.info("Server started")
 
+    auth_middleware = BasicAuthMiddleware(force=False)
     handler = WebHandler()
-    app = web.Application()
+    app = web.Application(middlewares=[auth_middleware])
     app.add_routes(
         [
             web.get("/", handler.handle),
@@ -49,6 +64,9 @@ def main(args: argparse.Namespace):
             web.get("/files/{filename}", handler.get_file_data),
             web.post("/files", handler.create_file),
             web.delete("/files/{filename}", handler.delete_file),
+
+            web.post("/register", handler.register),
+            web.post("/login", handler.login),
         ]
     )
     web.run_app(app, port=server_config["port"], host=server_config["host"])
@@ -98,6 +116,12 @@ if __name__ == "__main__":
             dest="config_file",
             default=ServerConfig.DEFAULT_CONFIG_FILE,
             help=f"Configuration file. Default: {ServerConfig.DEFAULT_CONFIG_FILE}.",
+        )
+        parser.add_argument(
+            "--init-db",
+            dest="init_db",
+            action="store_true",
+            help=f"Initialize DB.",
         )
 
         args = parser.parse_args()
